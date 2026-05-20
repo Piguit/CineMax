@@ -1,4 +1,6 @@
 package Repository;
+import Model.ItemInitializer;
+import Model.Identifiable;
 import Model.Movie;
 
 import java.io.*;
@@ -13,20 +15,26 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
-public class MovieRepository implements FileRepository<Movie, Long> {
+public class Repository<E extends ItemInitializer<E> & Identifiable<E>> {
+    private final E model;
     private final Path path;
     private final Path tempPath;
-    public MovieRepository(String fileName) throws IOException {
+
+    
+    private final char DIVIDER = '~';
+    private final char TERMINATOR = '\n';
+    public Repository(E model, String fileName) throws IOException {
+        this.model = model;
         this.path = Path.of("data", fileName);
-        this.tempPath = Path.of("data", "temp_"+ fileName);
+        this.tempPath = Path.of("data", "temp_" + fileName);
         File file = path.toFile();
         if (!file.exists())
             file.createNewFile();
     }
 
-    public List<Movie> findAll() {
+    public List<E> findAll() {
         try (FileChannel channel = FileChannel.open(path, StandardOpenOption.READ)) {
-            List<Movie> list = new ArrayList<>();
+            List<E> list = new ArrayList<>();
             boolean incompleteTuple = false;
             String last = "";
             int pageLength, completeTuples;
@@ -39,9 +47,9 @@ public class MovieRepository implements FileRepository<Movie, Long> {
                 buffer.flip();
                 String chunk = last + StandardCharsets.UTF_8.decode(buffer).toString();
                 
-                if (chunk.charAt(chunk.length() - 1) != '\n')
+                if (chunk.charAt(chunk.length() - 1) != TERMINATOR)
                     incompleteTuple = true;
-                String[] tuples = chunk.split("\n");
+                String[] tuples = chunk.split(String.valueOf(TERMINATOR));
                 if (incompleteTuple) {
                     completeTuples = tuples.length - 1;
                     last = tuples[completeTuples];
@@ -52,8 +60,8 @@ public class MovieRepository implements FileRepository<Movie, Long> {
                 }
 
                 for (int i = 0; i < completeTuples; i++) {
-                    String[] fields = tuples[i].split("\\|");
-                    list.add(new Movie(fields));
+                    String[] fields = tuples[i].split("~");
+                    list.add(model.getNewItem(fields));
                 }
             }
             return list;
@@ -62,23 +70,20 @@ public class MovieRepository implements FileRepository<Movie, Long> {
         return null;
     }
 
-    public Movie findById(Long id) {
-        List<Movie> list = findAll();
-        Stream<Movie> stream = list.stream();
-        stream = stream.filter(m -> m.getMovieId() == id);
-        List<Movie> oneItemList = stream.toList();
+    public E findById(Long id) {
+        List<E> list = findAll();
+        Stream<E> stream = list.stream();
+        stream = stream.filter(m -> m.getId() == id);
+        List<E> oneItemList = stream.toList();
         return oneItemList.getFirst();
     }
 
-    public void save(Movie movie) {
+    public void save(E item) {
         String persistent = "";
-        persistent += movie.getMovieId() + "|";
-        persistent += movie.getTitle() + "|";
-        persistent += movie.getDirector() + "|";
-        persistent += movie.getYear() + "|";
-        persistent += movie.getGenre() + "|";
-        persistent += movie.getRunningTime() + "|";
-        persistent += movie.getMinAge() + "\n";
+        String[] itemFields = item.getFields();
+        for (int i = 0; i < itemFields.length - 1; i++)
+            persistent += itemFields[i] + "~";
+        persistent += itemFields[itemFields.length - 1] + TERMINATOR;
         try (FileChannel channel = FileChannel.open(path, StandardOpenOption.APPEND)) {
             ByteBuffer buffer = ByteBuffer.wrap(persistent.getBytes(StandardCharsets.UTF_8));
             channel.write(buffer);
@@ -87,7 +92,7 @@ public class MovieRepository implements FileRepository<Movie, Long> {
         }
     }
 
-    public boolean delete(Long id) {
+    public boolean delete(long id) {
         try {
             File tempFile = tempPath.toFile();
             if (tempFile.exists()) tempFile.delete();
@@ -126,9 +131,9 @@ public class MovieRepository implements FileRepository<Movie, Long> {
             iBuffer.flip();
             String iChunk = last + StandardCharsets.UTF_8.decode(iBuffer).toString();
             
-            if (iChunk.charAt(iChunk.length() - 1) != '\n')
+            if (iChunk.charAt(iChunk.length() - 1) != TERMINATOR)
                 incompleteTuple = true;
-            String[] tuples = iChunk.split("\n");
+            String[] tuples = iChunk.split(String.valueOf(TERMINATOR));
             if (incompleteTuple) {
                 completeTuples = tuples.length - 1;
                 last = tuples[completeTuples];
@@ -140,8 +145,8 @@ public class MovieRepository implements FileRepository<Movie, Long> {
 
             String oChunk = "";
             for (int i = 0; i < completeTuples; i++) {
-                String[] fields = tuples[i].split("\\|");
-                if (new Movie(fields).getMovieId() != id) {
+                String[] fields = tuples[i].split(String.valueOf(DIVIDER));
+                if (new Movie(fields).getId() != id) {
                     oChunk += tuples[i] + "\n";
                 } else {
                     found = true;
