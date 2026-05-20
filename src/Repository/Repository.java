@@ -15,15 +15,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
-public class Repository<E extends ItemInitializer<E> & Identifiable<E>> {
-    private final E model;
+public class Repository<E, F extends ItemInitializer<F> & Identifiable<E>> {
+    private final F model;
     private final Path path;
     private final Path tempPath;
 
     
     private final char DIVIDER = '~';
     private final char TERMINATOR = '\n';
-    public Repository(E model, String fileName) throws IOException {
+    public Repository(F model, String fileName) throws IOException {
         this.model = model;
         this.path = Path.of("data", fileName);
         this.tempPath = Path.of("data", "temp_" + fileName);
@@ -32,9 +32,9 @@ public class Repository<E extends ItemInitializer<E> & Identifiable<E>> {
             file.createNewFile();
     }
 
-    public List<E> findAll() {
+    public List<F> findAll() {
         try (FileChannel channel = FileChannel.open(path, StandardOpenOption.READ)) {
-            List<E> list = new ArrayList<>();
+            List<F> list = new ArrayList<>();
             boolean incompleteTuple = false;
             String last = "";
             int pageLength, completeTuples;
@@ -60,7 +60,7 @@ public class Repository<E extends ItemInitializer<E> & Identifiable<E>> {
                 }
 
                 for (int i = 0; i < completeTuples; i++) {
-                    String[] fields = tuples[i].split("~");
+                    String[] fields = tuples[i].split(String.valueOf(DIVIDER));
                     list.add(model.getNewItem(fields));
                 }
             }
@@ -70,15 +70,15 @@ public class Repository<E extends ItemInitializer<E> & Identifiable<E>> {
         return null;
     }
 
-    public E findById(Long id) {
-        List<E> list = findAll();
-        Stream<E> stream = list.stream();
-        stream = stream.filter(m -> m.getId() == id);
-        List<E> oneItemList = stream.toList();
+    public F findById(E id) {
+        List<F> list = findAll();
+        Stream<F> stream = list.stream();
+        stream = stream.filter(m -> m.getId().equals(id));
+        List<F> oneItemList = stream.toList();
         return oneItemList.getFirst();
     }
 
-    public void save(E item) {
+    public void save(F item) {
         String persistent = "";
         String[] itemFields = item.getFields();
         for (int i = 0; i < itemFields.length - 1; i++)
@@ -92,7 +92,7 @@ public class Repository<E extends ItemInitializer<E> & Identifiable<E>> {
         }
     }
 
-    public boolean delete(long id) {
+    public boolean delete(E id) {
         try {
             File tempFile = tempPath.toFile();
             if (tempFile.exists()) tempFile.delete();
@@ -116,7 +116,7 @@ public class Repository<E extends ItemInitializer<E> & Identifiable<E>> {
         return result;
     }
 
-    private String tryToDelete(long id, FileChannel iChannel, FileChannel oChannel) throws IOException {
+    private String tryToDelete(E id, FileChannel iChannel, FileChannel oChannel) throws IOException {
         boolean incompleteTuple = false, found = false;
         String last = "";
         int pageLength, completeTuples;
@@ -146,7 +146,7 @@ public class Repository<E extends ItemInitializer<E> & Identifiable<E>> {
             String oChunk = "";
             for (int i = 0; i < completeTuples; i++) {
                 String[] fields = tuples[i].split(String.valueOf(DIVIDER));
-                if (new Movie(fields).getId() != id) {
+                if (model.getNewItem(fields).getId().equals(id)) {
                     oChunk += tuples[i] + "\n";
                 } else {
                     found = true;

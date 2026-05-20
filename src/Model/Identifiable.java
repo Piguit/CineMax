@@ -1,7 +1,7 @@
 package Model;
 
 public interface Identifiable<E> {
-    public long getId();
+    public E getId();
 
     public String[] getFields();
 }

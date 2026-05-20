@@ -1,7 +1,7 @@
 package Model;
 
-public class Movie implements ItemInitializer<Movie>, Identifiable<Movie> {
-    private long movieId;
+public class Movie implements ItemInitializer<Movie>, Identifiable<Long> {
+    private Long movieId;
     private String title;
     private String director;
     private short year;
@@ -36,7 +36,7 @@ public class Movie implements ItemInitializer<Movie>, Identifiable<Movie> {
         return new Movie(array);
     }
 
-    public long getId() {
+    public Long getId() {
         return movieId;
     }
 
