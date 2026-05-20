@@ -1,6 +1,6 @@
 package Model;
 
-public class Movie {
+public class Movie implements ItemInitializer<Movie>, Identifiable<Movie> {
     private long movieId;
     private String title;
     private String director;
@@ -8,6 +8,8 @@ public class Movie {
     private String genre;
     private short runningTime;
     private byte minAge;
+
+    public Movie() {}
 
     public Movie(String movieId, String title, String director, String year,
                  String genre, String runningTime, String minAge) {
@@ -29,8 +31,18 @@ public class Movie {
         this.runningTime = Short.parseShort(array[5]);
         this.minAge = Byte.parseByte(array[6]);
     }
-    public long getMovieId() {
+
+    public Movie getNewItem(String[] array) {
+        return new Movie(array);
+    }
+
+    public long getId() {
         return movieId;
+    }
+
+    public String[] getFields() {
+        return new String[]{String.valueOf(movieId), title, director, String.valueOf(year),
+            genre, String.valueOf(runningTime), String.valueOf(minAge)};
     }
 
     public String getTitle() {
