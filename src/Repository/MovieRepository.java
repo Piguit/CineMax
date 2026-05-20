@@ -27,36 +27,32 @@ public class MovieRepository implements FileRepository<Movie, Long> {
     public List<Movie> findAll() {
         try (FileChannel channel = FileChannel.open(path, StandardOpenOption.READ)) {
             List<Movie> list = new ArrayList<>();
+            boolean incompleteTuple = false;
             String last = "";
-            long bytesRead = 0L;
-            int pageLength;
-            while (channel.position() < channel.size()) {
+            int pageLength, completeTuples;
+            long bytesRead;
+            ByteBuffer buffer;
+            while ((bytesRead = channel.position()) < channel.size()) {
                 pageLength = (channel.size() - bytesRead < 4096) ? (int) (channel.size() - bytesRead) : 4096;
-                ByteBuffer buffer = ByteBuffer.allocate(pageLength);
+                buffer = ByteBuffer.allocate(pageLength);
                 channel.read(buffer);
-                bytesRead += 4096;
                 buffer.flip();
                 String chunk = last + StandardCharsets.UTF_8.decode(buffer).toString();
+                
+                if (chunk.charAt(chunk.length() - 1) != '\n')
+                    incompleteTuple = true;
                 String[] tuples = chunk.split("\n");
-                if (tuples.length > 1) {
-                    last = tuples[tuples.length - 1];
-                    if (last.charAt(last.length() - 1) == '\r') {
-                        last = "";
-                    }
+                if (incompleteTuple) {
+                    completeTuples = tuples.length - 1;
+                    last = tuples[completeTuples];
+                    incompleteTuple = false;
+                } else {
+                    completeTuples = tuples.length;
+                    last = "";
                 }
-                //Eliminazione dei '\r' residui
-                for (int i = 0; i < tuples.length - 1; i++) {
-                    tuples[i] = tuples[i].substring(0, tuples[i].length() - 1);
-                }
-                if (last.isEmpty()) {
-                    tuples[tuples.length - 1] = tuples[tuples.length - 1].substring(0, tuples[tuples.length - 1].length() - 1);
-                }
-                for (int i = 0; i < tuples.length - 1; i++) {
+
+                for (int i = 0; i < completeTuples; i++) {
                     String[] fields = tuples[i].split("\\|");
-                    list.add(new Movie(fields));
-                }
-                if (last.isEmpty()) {
-                    String[] fields = tuples[tuples.length - 1].split("\\|");
                     list.add(new Movie(fields));
                 }
             }
@@ -82,7 +78,7 @@ public class MovieRepository implements FileRepository<Movie, Long> {
         persistent += movie.getYear() + "|";
         persistent += movie.getGenre() + "|";
         persistent += movie.getRunningTime() + "|";
-        persistent += movie.getMinAge() + "\r\n";
+        persistent += movie.getMinAge() + "\n";
         try (FileChannel channel = FileChannel.open(path, StandardOpenOption.APPEND)) {
             ByteBuffer buffer = ByteBuffer.wrap(persistent.getBytes(StandardCharsets.UTF_8));
             channel.write(buffer);
@@ -97,70 +93,86 @@ public class MovieRepository implements FileRepository<Movie, Long> {
             if (tempFile.exists()) tempFile.delete();
             tempFile.createNewFile();
         } catch (IOException e) {e.printStackTrace();}
-        int condition = 0;
+        
+        boolean result = false;
         try (FileChannel iChannel = FileChannel.open(path, StandardOpenOption.READ);
             FileChannel oChannel = FileChannel.open(tempPath, StandardOpenOption.APPEND)) {
-            String last = "";
-            long bytesRead = 0L;
-            int pageLength;
-            ByteBuffer iBuffer;
-            while (iChannel.position() < iChannel.size()) {
-                pageLength = (iChannel.size() - bytesRead < 4096) ? (int) (iChannel.size() - bytesRead) : 4096;
-                iBuffer = ByteBuffer.allocate(pageLength);
-                iChannel.read(iBuffer);
-                iBuffer.flip();
-                bytesRead += 4096;
-                if (condition == 0) {
-                    //pageLength = (iChannel.size() - bytesRead < 4096) ? (int) (iChannel.size() - bytesRead) : 4096;
-                    //ByteBuffer iBuffer = ByteBuffer.allocate(pageLength);
-                    //iChannel.read(iBuffer);
-                    //bytesRead += 4096;
-                    //iBuffer.flip();
-                    String iChunk = last + StandardCharsets.UTF_8.decode(iBuffer).toString();
-                    String[] tuples = iChunk.split("\n");
-                    if (tuples.length > 1) {
-                        last = tuples[tuples.length - 1];
-                        if (last.charAt(last.length() - 1) == '\r') {
-                            last = "";
-                        }
-                    }
-                    //Eliminazione dei '\r' residui
-                    for (int i = 0; i < tuples.length; i++) {
-                        tuples[i] = tuples[i].substring(0, tuples[i].length() - 1);
-                    }
-                    String oChunk = "";
-                    for (int i = 0; i < tuples.length - 1; i++) {
-                        String[] fields = tuples[i].split("\\|");
-                        if (new Movie(fields).getMovieId() == id) {
-                            condition--;
-                        }
-                        if (condition == 0)
-                            oChunk += tuples[i] + "\r\n";
-                    }
-                    if (last.isEmpty()) {
-                        String[] fields = tuples[tuples.length - 1].split("\\|");
-                        if (new Movie(fields).getMovieId() == id) {
-                            condition--;
-                        }
-                        if (condition == 0)
-                            oChunk += tuples[tuples.length - 1] + "\r\n";
-                    }
-                    ByteBuffer oBuffer = ByteBuffer.wrap(oChunk.getBytes(StandardCharsets.UTF_8));
-                    oChannel.write(oBuffer);
-                } else if (!last.isEmpty()) {
-                    byte[] lastBuffer = last.getBytes(StandardCharsets.UTF_8);
-                    ByteBuffer widerBuffer = ByteBuffer.allocate(lastBuffer.length + iBuffer.limit());
-                    widerBuffer.put(lastBuffer);
-                    widerBuffer.put(iBuffer);
-                    oChannel.write(widerBuffer.flip());
-                } else {
-                    oChannel.write(iBuffer.flip());
-                }
+            String last = tryToDelete(id, iChannel, oChannel);
+            if (last != null && !last.isEmpty()) {
+                handleSplitTuple(last, iChannel, oChannel);
             }
+            copyRemainingData(iChannel, oChannel);
+            result = oChannel.size() < iChannel.size();
         } catch (IOException e) {e.printStackTrace();}
+        
         try {
             Files.move(tempPath, path, StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {e.printStackTrace();}
-        return condition < 0;
+        return result;
+    }
+
+    private String tryToDelete(long id, FileChannel iChannel, FileChannel oChannel) throws IOException {
+        boolean incompleteTuple = false, found = false;
+        String last = "";
+        int pageLength, completeTuples;
+        long bytesRead;
+        ByteBuffer iBuffer;
+        while (true) {
+            if ((bytesRead = iChannel.position()) == iChannel.size()) return null;
+            if (found) return last;
+            pageLength = (iChannel.size() - bytesRead < 4096) ? (int) (iChannel.size() - bytesRead) : 4096;
+            iBuffer = ByteBuffer.allocate(pageLength);
+            iChannel.read(iBuffer);
+            iBuffer.flip();
+            String iChunk = last + StandardCharsets.UTF_8.decode(iBuffer).toString();
+            
+            if (iChunk.charAt(iChunk.length() - 1) != '\n')
+                incompleteTuple = true;
+            String[] tuples = iChunk.split("\n");
+            if (incompleteTuple) {
+                completeTuples = tuples.length - 1;
+                last = tuples[completeTuples];
+                incompleteTuple = false;
+            } else {
+                completeTuples = tuples.length;
+                last = "";
+            }
+
+            String oChunk = "";
+            for (int i = 0; i < completeTuples; i++) {
+                String[] fields = tuples[i].split("\\|");
+                if (new Movie(fields).getMovieId() != id) {
+                    oChunk += tuples[i] + "\n";
+                } else {
+                    found = true;
+                }
+            }
+            ByteBuffer oBuffer = ByteBuffer.wrap(oChunk.getBytes(StandardCharsets.UTF_8));
+            oChannel.write(oBuffer);
+        }
+    }
+
+    private void handleSplitTuple(String last, FileChannel iChannel, FileChannel oChannel) throws IOException {
+        long bytesRead = iChannel.position();
+        int pageLength = (iChannel.size() - bytesRead < 4096) ? (int) (iChannel.size() - bytesRead) : 4096;
+        ByteBuffer iBuffer = ByteBuffer.allocate(pageLength);
+        iChannel.read(iBuffer);
+        byte[] lastBuffer = last.getBytes(StandardCharsets.UTF_8);
+        ByteBuffer widerBuffer = ByteBuffer.allocate(lastBuffer.length + pageLength);
+        widerBuffer.put(lastBuffer);
+        widerBuffer.put(iBuffer.flip());
+        oChannel.write(widerBuffer.flip());
+    }
+
+    private void copyRemainingData(FileChannel iChannel, FileChannel oChannel) throws IOException {
+        int pageLength;
+        long bytesRead;
+        ByteBuffer iBuffer;
+        while ((bytesRead = iChannel.position()) < iChannel.size()) {
+            pageLength = (iChannel.size() - bytesRead < 4096) ? (int) (iChannel.size() - bytesRead) : 4096;
+            iBuffer = ByteBuffer.allocate(pageLength);
+            iChannel.read(iBuffer);
+            oChannel.write(iBuffer.flip());
+        }
     }
 }
