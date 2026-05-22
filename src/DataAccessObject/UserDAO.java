@@ -3,16 +3,16 @@ package DataAccessObject;
 import java.io.IOException;
 import java.util.List;
 
-import Model.Movie;
+import Model.User;
 import Repository.GenericRepository;
 
-public class MovieDAO {
-    public static final String FILE_NAME = "movie_repository.txt";
-    private GenericRepository<Long, Movie> r;
+public class UserDAO {
+    public static final String FILE_NAME = "user_repository.txt";
+    private GenericRepository<String, User> r;
 
-    public MovieDAO() {
+    public UserDAO() {
         try {
-            this.r = new GenericRepository<>(new Movie(), FILE_NAME);
+            this.r = new GenericRepository<>(new User(), FILE_NAME);
         } catch (IOException e) {
             //Non sarà la gestione definitiva ovviamente
             System.err.println("Impossibile creare collegamento con la base di dati.");
@@ -20,23 +20,23 @@ public class MovieDAO {
         }
     };
 
-    public List<Movie> findAll() {
+    public List<User> findAll() {
         return r.findAll();
     }
 
-    public Movie findById(long id) {
+    public User findById(String id) {
         return r.findById(id);
     }
 
-    public boolean insert(Movie movie) {
+    public boolean insert(User movie) {
         return r.save(movie);
     }
 
-    public boolean delete(long id) {
+    public boolean delete(String id) {
         return r.delete(id);
     }
 
-    public boolean update(Movie movie) {
+    public boolean update(User movie) {
         return r.update(movie);
     }
 }
