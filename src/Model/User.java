@@ -11,9 +11,7 @@ public class User implements ItemInitializer<User>, Identifiable<String> {
     private String residence;
     private String role;
 
-    public User(){
-
-    }
+    public User() {}
 
     public User(String username, String name, String surname, String password, String birthDate, String residence, String role) {
         this.username = username;
@@ -59,7 +57,7 @@ public class User implements ItemInitializer<User>, Identifiable<String> {
     public String getPassword(){
         return password;
     }
-    public LocaleDate getBirthDate(){
+    public LocalDate getBirthDate(){
         return birthDate;
     }
     public String getResidence(){
@@ -78,7 +76,7 @@ public class User implements ItemInitializer<User>, Identifiable<String> {
     public void setSurname(String surname){
         this.surname = surname;
     }
-    public void setPassword(){
+    public void setPassword(String password){
         this.password = password;
     }
     public void setBirthDate(LocalDate birthDate){

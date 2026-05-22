@@ -14,15 +14,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
-public class Repository<E, F extends ItemInitializer<F> & Identifiable<E>> {
+public class GenericRepository<E, F extends ItemInitializer<F> & Identifiable<E>> {
     private final F model;
     private final Path path;
     private final Path tempPath;
-
     
     private final char DIVIDER = '~';
     private final char TERMINATOR = '\n';
-    public Repository(F model, String fileName) throws IOException {
+    public GenericRepository(F model, String fileName) throws IOException {
         this.model = model;
         this.path = Path.of("data", fileName);
         this.tempPath = Path.of("data", "temp_" + fileName);
