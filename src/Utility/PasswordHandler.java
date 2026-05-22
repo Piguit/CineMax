@@ -38,7 +38,7 @@ public class PasswordHandler {
         return factory.generateSecret(spec).getEncoded();
     }
 
-    private static byte[] generateSalt() {
+    public static byte[] generateSalt() {
         SecureRandom random = new SecureRandom();
         byte[] salt = new byte[SALT_LENGTH];
         random.nextBytes(salt);

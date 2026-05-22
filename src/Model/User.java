@@ -9,7 +9,7 @@ public class User implements ItemInitializer<User>, Identifiable<String> {
     private String password;
     private LocalDate birthDate;
     private String residence;
-    private String role;
+    private Role role;
 
     public User() {}
 
@@ -20,7 +20,17 @@ public class User implements ItemInitializer<User>, Identifiable<String> {
         this.password = password;
         this.birthDate = LocalDate.parse(birthDate);
         this.residence = residence;
-        this.role = role;
+        switch (role) {
+            case "CLIENT":
+            this.role = Role.CLIENT;
+            break;
+            case "PROJECTIONIST":
+                this.role = Role.PROJECTIONIST;
+                break;
+            default:
+                this.role = Role.BOXOFFICECLERK;
+                break;
+        }
     }
 
     public User(String[] array) {
