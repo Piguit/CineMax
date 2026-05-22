@@ -1,7 +1,6 @@
 package Repository;
 import Model.ItemInitializer;
 import Model.Identifiable;
-import Model.Movie;
 
 import java.io.*;
 import java.nio.ByteBuffer;
@@ -75,10 +74,12 @@ public class Repository<E, F extends ItemInitializer<F> & Identifiable<E>> {
         Stream<F> stream = list.stream();
         stream = stream.filter(m -> m.getId().equals(id));
         List<F> oneItemList = stream.toList();
-        return oneItemList.getFirst();
+        return oneItemList.isEmpty() ? null : oneItemList.getFirst();
     }
 
-    public void save(F item) {
+    public boolean save(F item) {
+        if (findById(item.getId()) != null)
+            return false;
         String persistent = "";
         String[] itemFields = item.getFields();
         for (int i = 0; i < itemFields.length - 1; i++)
@@ -87,9 +88,12 @@ public class Repository<E, F extends ItemInitializer<F> & Identifiable<E>> {
         try (FileChannel channel = FileChannel.open(path, StandardOpenOption.APPEND)) {
             ByteBuffer buffer = ByteBuffer.wrap(persistent.getBytes(StandardCharsets.UTF_8));
             channel.write(buffer);
+            return true;
         } catch (IOException e) {
             e.printStackTrace();
         }
+        //Temporaneo
+        return false;
     }
 
     public boolean delete(E id) {
@@ -99,32 +103,49 @@ public class Repository<E, F extends ItemInitializer<F> & Identifiable<E>> {
             tempFile.createNewFile();
         } catch (IOException e) {e.printStackTrace();}
         
-        boolean result = false;
+        Couple<Boolean, String> results = null;
         try (FileChannel iChannel = FileChannel.open(path, StandardOpenOption.READ);
             FileChannel oChannel = FileChannel.open(tempPath, StandardOpenOption.APPEND)) {
-            String last = tryToDelete(id, iChannel, oChannel);
-            if (last != null && !last.isEmpty()) {
-                handleSplitTuple(last, iChannel, oChannel);
+            results = tryToModify(id, null, iChannel, oChannel);
+            if (results.getDx() != null && !results.getDx().isEmpty()) {
+                handleSplitTuple(results.getDx(), iChannel, oChannel);
             }
             copyRemainingData(iChannel, oChannel);
-            result = oChannel.size() < iChannel.size();
         } catch (IOException e) {e.printStackTrace();}
         
         try {
             Files.move(tempPath, path, StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {e.printStackTrace();}
-        return result;
+        return results.getSx();
     }
 
-    private String tryToDelete(E id, FileChannel iChannel, FileChannel oChannel) throws IOException {
+    private static class Couple<S, D> {
+        private S sx;
+        private D dx;
+        
+        public Couple(S sx, D dx) {
+            this.sx = sx;
+            this.dx = dx;
+        }
+
+        public S getSx() {
+            return sx;
+        }
+
+        public D getDx() {
+            return dx;
+        }
+    }
+
+    private Couple<Boolean, String> tryToModify(E id, String content, FileChannel iChannel, FileChannel oChannel) throws IOException {
         boolean incompleteTuple = false, found = false;
         String last = "";
         int pageLength, completeTuples;
         long bytesRead;
         ByteBuffer iBuffer;
         while (true) {
-            if ((bytesRead = iChannel.position()) == iChannel.size()) return null;
-            if (found) return last;
+            if ((bytesRead = iChannel.position()) == iChannel.size()) return new Couple<>(found, null);
+            if (found) return new Couple<>(found, last);
             pageLength = (iChannel.size() - bytesRead < 4096) ? (int) (iChannel.size() - bytesRead) : 4096;
             iBuffer = ByteBuffer.allocate(pageLength);
             iChannel.read(iBuffer);
@@ -146,9 +167,12 @@ public class Repository<E, F extends ItemInitializer<F> & Identifiable<E>> {
             String oChunk = "";
             for (int i = 0; i < completeTuples; i++) {
                 String[] fields = tuples[i].split(String.valueOf(DIVIDER));
-                if (model.getNewItem(fields).getId().equals(id)) {
-                    oChunk += tuples[i] + "\n";
-                } else {
+                if (!model.getNewItem(fields).getId().equals(id))
+                    oChunk += tuples[i] + TERMINATOR;
+                else if (content == null || content.isEmpty())
+                    found = true;
+                else {
+                    oChunk += content + TERMINATOR;
                     found = true;
                 }
             }
@@ -179,5 +203,34 @@ public class Repository<E, F extends ItemInitializer<F> & Identifiable<E>> {
             iChannel.read(iBuffer);
             oChannel.write(iBuffer.flip());
         }
+    }
+
+    public boolean update(F item) {
+        try {
+            File tempFile = tempPath.toFile();
+            if (tempFile.exists()) tempFile.delete();
+            tempFile.createNewFile();
+        } catch (IOException e) {e.printStackTrace();}
+        
+        Couple<Boolean, String> results = null;
+        try (FileChannel iChannel = FileChannel.open(path, StandardOpenOption.READ);
+            FileChannel oChannel = FileChannel.open(tempPath, StandardOpenOption.APPEND)) {
+            String[] fields = item.getFields();
+            String updatedItem = "";
+            for (String field: fields) {
+                updatedItem += DIVIDER + field;
+            }
+            updatedItem = updatedItem.substring(1);
+            results = tryToModify(item.getId(), updatedItem, iChannel, oChannel);
+            if (results.getDx() != null && !results.getDx().isEmpty()) {
+                handleSplitTuple(results.getDx(), iChannel, oChannel);
+            }
+            copyRemainingData(iChannel, oChannel);
+        } catch (IOException e) {e.printStackTrace();}
+        
+        try {
+            Files.move(tempPath, path, StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException e) {e.printStackTrace();}
+        return results.getSx();
     }
 }
