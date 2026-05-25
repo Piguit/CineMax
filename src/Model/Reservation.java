@@ -5,16 +5,16 @@ import java.time.LocalDateTime;
 public class Reservation implements ItemInitializer<Reservation>, Identifiable<Long> {
     private long reservationId;
     private String username;
-    private long movieId;
+    private long showId;
     private byte ticketsNumber;
     private LocalDateTime showTime;
 
     public Reservation() {}
 
-    public Reservation(String reservationId, String username, String movieId, String ticketsNumber, String showTime){
+    public Reservation(String reservationId, String username, String showId, String ticketsNumber, String showTime){
         this.reservationId = Long.parseLong(reservationId);
         this.username = username;
-        this.movieId = Long.parseLong(movieId);
+        this.showId = Long.parseLong(showId);
         this.ticketsNumber = Byte.parseByte(ticketsNumber);
         this.showTime = LocalDateTime.parse(showTime);
     }
@@ -22,7 +22,7 @@ public class Reservation implements ItemInitializer<Reservation>, Identifiable<L
     public Reservation (String[] array) {
         this.reservationId = Long.parseLong(array[0]);
         this.username = array[1];
-        this.movieId = Long.parseLong(array[2]);
+        this.showId = Long.parseLong(array[2]);
         this.ticketsNumber = Byte.parseByte(array[3]);
         this.showTime = LocalDateTime.parse(array[4]);
     }
@@ -32,13 +32,13 @@ public class Reservation implements ItemInitializer<Reservation>, Identifiable<L
     public Long getId() {return reservationId; }
 
     public String[] getFields(){
-        return new String[]{String.valueOf(reservationId), username, String.valueOf(movieId),
+        return new String[]{String.valueOf(reservationId), username, String.valueOf(showId),
                 String.valueOf(ticketsNumber), String.valueOf(showTime)} ;
     }
 
     public String getUsername(){return username; }
 
-    public long getTitle(){return movieId; }
+    public long getShowId(){return showId; }
 
     public byte getTicketsNumber(){return ticketsNumber; }
 
@@ -48,7 +48,7 @@ public class Reservation implements ItemInitializer<Reservation>, Identifiable<L
 
     public void setUsername(String username){this.username = username; }
 
-    public void setMovieId(String movieId){this.movieId = Long.parseLong(movieId); }
+    public void setShowId(String showId){this.showId = Long.parseLong(showId); }
 
     public void setTicketsNumber(byte ticketsNumber){this.ticketsNumber = ticketsNumber; }
 
@@ -58,7 +58,7 @@ public class Reservation implements ItemInitializer<Reservation>, Identifiable<L
         String result = "";
         result += reservationId + " | ";
         result += username + " | ";
-        result += movieId + " | ";
+        result += showId + " | ";
         result += ticketsNumber + " | ";
         result += showTime + " | ";
         return result;

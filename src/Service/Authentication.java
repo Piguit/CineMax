@@ -27,8 +27,8 @@ public class Authentication {
     }
 
     public boolean signUp(String username, String name, String surname,
-                       String password, String birthDate,
-                       String residence) throws NoSuchAlgorithmException, InvalidKeySpecException  {
+                          String password, String birthDate,
+                          String residence) throws NoSuchAlgorithmException, InvalidKeySpecException  {
         if (uDao.findById(username) != null) {
             return false;
         }
