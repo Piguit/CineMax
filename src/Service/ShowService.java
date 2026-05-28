@@ -5,6 +5,7 @@ import DataAccessObject.ReservationDAO;
 import DataAccessObject.ShowDAO;
 import Model.Movie;
 import Model.Show;
+import Model.User;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -60,11 +61,10 @@ public class ShowService {
         return result;
     }
 
-    public showDetails visualizeShow(Long showId) {
+    public String[] visualizeShow(Long showId) {
         Show s = sDao.findById(showId);
-        if (s == null) {
-            return null;
-        }
+        if (s == null) return null;
+        User client =
         int seatsTaken = sDao.countTicketByShow(idShow);
         int seatsFree = 200 - seatsTaken;
         return new showDetails(s, seatsFree);
