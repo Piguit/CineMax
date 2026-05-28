@@ -1,8 +1,10 @@
 package Service;
 
+import DataAccessObject.MovieDAO;
 import DataAccessObject.ReservationDAO;
 import DataAccessObject.ShowDAO;
 import DataAccessObject.UserDAO;
+import Model.Movie;
 import Model.Reservation;
 import Model.Show;
 import Model.User;
@@ -14,11 +16,13 @@ public class ReservationService {
     private final ReservationDAO rDao;
     private final ShowDAO sDao;
     private final UserDAO uDao;
+    private final MovieDAO mDao;
 
-    public ReservationService(ReservationDAO rDao, ShowDAO sDao, UserDAO uDao) {
+    public ReservationService(ReservationDAO rDao, ShowDAO sDao, UserDAO uDao, MovieDAO mDao) {
         this.rDao = rDao;
         this.sDao = sDao;
         this.uDao = uDao;
+        this.mDao = mDao;
     }
 
 
@@ -71,13 +75,13 @@ public class ReservationService {
         rDao.delete(reservationId);
     }
 
-    public reservationDetails visualizeReservation(Long reservationId) {
+    public ReservationDetails visualizeReservation(Long reservationId) {
         Reservation r = rDao.findById(reservationId);
         if (r == null) return null;
+        User c = uDao.findById(r.getUsername());
         Show s = sDao.findById(r.getShowId());
-        User client = uDao.findById(r.getUsername());
-        // assumiamo che cliente proiezione esistano sempre se la proiezione è valida
-        return new reservationDetails(r, s, client);
+        Movie m = mDao.findById(s.getMovieId());
+        return new ReservationDetails(r, c, s, m);
     }
 
     public List<Reservation> searchReservations() {
