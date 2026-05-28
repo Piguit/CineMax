@@ -12,111 +12,14 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Stream;
 
 public class GenericRepository<E, F extends ItemInitializer<F> & Identifiable<E>> {
     private final F model;
     private final Path path;
     private final Path tempPath;
-    
+
     private final char DIVIDER = '~';
     private final char TERMINATOR = '\n';
-    public GenericRepository(F model, String fileName) throws IOException {
-        this.model = model;
-        this.path = Path.of("data", fileName);
-        this.tempPath = Path.of("data", "temp_" + fileName);
-        File file = path.toFile();
-        if (!file.exists())
-            file.createNewFile();
-    }
-
-    public List<F> findAll() {
-        try (FileChannel channel = FileChannel.open(path, StandardOpenOption.READ)) {
-            List<F> list = new ArrayList<>();
-            boolean incompleteTuple = false;
-            String last = "";
-            int pageLength, completeTuples;
-            long bytesRead;
-            ByteBuffer buffer;
-            while ((bytesRead = channel.position()) < channel.size()) {
-                pageLength = (channel.size() - bytesRead < 4096) ? (int) (channel.size() - bytesRead) : 4096;
-                buffer = ByteBuffer.allocate(pageLength);
-                channel.read(buffer);
-                buffer.flip();
-                String chunk = last + StandardCharsets.UTF_8.decode(buffer).toString();
-                
-                if (chunk.charAt(chunk.length() - 1) != TERMINATOR)
-                    incompleteTuple = true;
-                String[] tuples = chunk.split(String.valueOf(TERMINATOR));
-                if (incompleteTuple) {
-                    completeTuples = tuples.length - 1;
-                    last = tuples[completeTuples];
-                    incompleteTuple = false;
-                } else {
-                    completeTuples = tuples.length;
-                    last = "";
-                }
-
-                for (int i = 0; i < completeTuples; i++) {
-                    String[] fields = tuples[i].split(String.valueOf(DIVIDER));
-                    list.add(model.getNewItem(fields));
-                }
-            }
-            return list;
-        } catch (Exception e) {
-            e.printStackTrace();}
-        return null;
-    }
-
-    public F findById(E id) {
-        List<F> list = findAll();
-        Stream<F> stream = list.stream();
-        stream = stream.filter(m -> m.getId().equals(id));
-        List<F> oneItemList = stream.toList();
-        return oneItemList.isEmpty() ? null : oneItemList.getFirst();
-    }
-
-    public boolean save(F item) {
-        if (findById(item.getId()) != null)
-            return false;
-        String persistent = "";
-        String[] itemFields = item.getFields();
-        for (int i = 0; i < itemFields.length - 1; i++)
-            persistent += itemFields[i] + "~";
-        persistent += itemFields[itemFields.length - 1] + TERMINATOR;
-        try (FileChannel channel = FileChannel.open(path, StandardOpenOption.APPEND)) {
-            ByteBuffer buffer = ByteBuffer.wrap(persistent.getBytes(StandardCharsets.UTF_8));
-            channel.write(buffer);
-            return true;
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        //Temporaneo
-        return false;
-    }
-
-    public boolean delete(E id) {
-        try {
-            File tempFile = tempPath.toFile();
-            if (tempFile.exists()) tempFile.delete();
-            tempFile.createNewFile();
-        } catch (IOException e) {e.printStackTrace();}
-        
-        Couple<Boolean, String> results = null;
-        try (FileChannel iChannel = FileChannel.open(path, StandardOpenOption.READ);
-            FileChannel oChannel = FileChannel.open(tempPath, StandardOpenOption.APPEND)) {
-            results = tryToModify(id, null, iChannel, oChannel);
-            if (results.getDx() != null && !results.getDx().isEmpty()) {
-                handleSplitTuple(results.getDx(), iChannel, oChannel);
-            }
-            copyRemainingData(iChannel, oChannel);
-        } catch (IOException e) {e.printStackTrace();}
-        
-        try {
-            Files.move(tempPath, path, StandardCopyOption.REPLACE_EXISTING);
-        } catch (IOException e) {e.printStackTrace();}
-        return results.getSx();
-    }
 
     private static class Couple<S, D> {
         private S sx;
@@ -136,82 +39,93 @@ public class GenericRepository<E, F extends ItemInitializer<F> & Identifiable<E>
         }
     }
 
-    private Couple<Boolean, String> tryToModify(E id, String content, FileChannel iChannel, FileChannel oChannel) throws IOException {
-        boolean incompleteTuple = false, found = false;
-        String last = "";
-        int pageLength, completeTuples;
-        long bytesRead;
-        ByteBuffer iBuffer;
-        while (true) {
-            if ((bytesRead = iChannel.position()) == iChannel.size()) return new Couple<>(found, null);
-            if (found) return new Couple<>(found, last);
-            pageLength = (iChannel.size() - bytesRead < 4096) ? (int) (iChannel.size() - bytesRead) : 4096;
-            iBuffer = ByteBuffer.allocate(pageLength);
-            iChannel.read(iBuffer);
-            iBuffer.flip();
-            String iChunk = last + StandardCharsets.UTF_8.decode(iBuffer).toString();
-            
-            if (iChunk.charAt(iChunk.length() - 1) != TERMINATOR)
-                incompleteTuple = true;
-            String[] tuples = iChunk.split(String.valueOf(TERMINATOR));
-            if (incompleteTuple) {
-                completeTuples = tuples.length - 1;
-                last = tuples[completeTuples];
-                incompleteTuple = false;
-            } else {
-                completeTuples = tuples.length;
-                last = "";
-            }
-
-            String oChunk = "";
-            for (int i = 0; i < completeTuples; i++) {
-                String[] fields = tuples[i].split(String.valueOf(DIVIDER));
-                if (!model.getNewItem(fields).getId().equals(id))
-                    oChunk += tuples[i] + TERMINATOR;
-                else if (content == null || content.isEmpty())
-                    found = true;
-                else {
-                    oChunk += content + TERMINATOR;
-                    found = true;
-                }
-            }
-            ByteBuffer oBuffer = ByteBuffer.wrap(oChunk.getBytes(StandardCharsets.UTF_8));
-            oChannel.write(oBuffer);
-        }
+    public GenericRepository(F model, String fileName) throws IOException {
+        this.model = model;
+        this.path = Path.of("data", fileName);
+        this.tempPath = Path.of("data", "temp_" + fileName);
+        File file = path.toFile();
+        if (!file.exists())
+            file.createNewFile();
     }
 
-    private void handleSplitTuple(String last, FileChannel iChannel, FileChannel oChannel) throws IOException {
-        long bytesRead = iChannel.position();
-        int pageLength = (iChannel.size() - bytesRead < 4096) ? (int) (iChannel.size() - bytesRead) : 4096;
-        ByteBuffer iBuffer = ByteBuffer.allocate(pageLength);
-        iChannel.read(iBuffer);
-        byte[] lastBuffer = last.getBytes(StandardCharsets.UTF_8);
-        ByteBuffer widerBuffer = ByteBuffer.allocate(lastBuffer.length + pageLength);
-        widerBuffer.put(lastBuffer);
-        widerBuffer.put(iBuffer.flip());
-        oChannel.write(widerBuffer.flip());
+    private Couple<List<String>, ByteBuffer> getTuples(ByteBuffer buffer) throws IOException {
+        List<String> tuples = new ArrayList<>();
+        int chunkLength = buffer.capacity(), beginning = 0;
+        ByteBuffer truncated = ByteBuffer.allocate(0);
+        for (int end = 0; end < chunkLength; end++) {
+            if (buffer.get(end) == (byte) TERMINATOR) {
+                String tuple = StandardCharsets.UTF_8.decode(buffer.slice(beginning, end - beginning)).toString();
+                if (!tuple.isEmpty())
+                    tuples.add(tuple);
+                beginning = end + 1;
+            }
+        }
+        try {
+            truncated = buffer.slice(beginning, chunkLength - beginning);
+        } catch (IndexOutOfBoundsException e) {}
+
+        return new Couple<>(tuples, truncated);
     }
 
-    private void copyRemainingData(FileChannel iChannel, FileChannel oChannel) throws IOException {
-        int pageLength;
-        long bytesRead;
-        ByteBuffer iBuffer;
-        while ((bytesRead = iChannel.position()) < iChannel.size()) {
-            pageLength = (iChannel.size() - bytesRead < 4096) ? (int) (iChannel.size() - bytesRead) : 4096;
-            iBuffer = ByteBuffer.allocate(pageLength);
-            iChannel.read(iBuffer);
-            oChannel.write(iBuffer.flip());
+    public List<F> findAll() {
+        try (FileChannel channel = FileChannel.open(path, StandardOpenOption.READ)) {
+            List<F> list = new ArrayList<>();
+            ByteBuffer buffer , truncated = ByteBuffer.allocate(0);
+            while (channel.position() < channel.size()) {
+                buffer = ByteBuffer.allocate(truncated.capacity() + 4096);
+                buffer.put(truncated);
+                channel.read(buffer);
+                
+                Couple<List<String>, ByteBuffer> result = getTuples(buffer.slice(0, buffer.position()));
+                List<String> tuples = result.getSx();
+                truncated = result.getDx();
+                if (tuples.isEmpty()) continue;
+
+                for (String tuple: tuples)
+                    list.add(model.getNewItem(tuple.split(String.valueOf(DIVIDER))));
+            }
+            return list;
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+        return null;
+    }
+
+    public F findById(E id) {
+        List<F> list = findAll();
+        List<F> oneItemList = list.stream().filter(m -> m.getId().equals(id)).toList();
+        return oneItemList.isEmpty() ? null : oneItemList.getFirst();
+    }
+
+    public boolean save(F item) {
+        if (findById(item.getId()) != null)
+            return false;
+        String persistent = "";
+        String[] itemFields = item.getFields();
+        for (String field: itemFields)
+            persistent += DIVIDER + field;
+        persistent = persistent.substring(1) + TERMINATOR;
+        try (FileChannel channel = FileChannel.open(path, StandardOpenOption.APPEND)) {
+            ByteBuffer buffer = ByteBuffer.wrap(persistent.getBytes(StandardCharsets.UTF_8));
+            channel.write(buffer);
+            return true;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        //Temporaneo
+        return false;
     }
 
     public boolean update(F item) {
+        if (findById(item.getId()) == null)
+            return false;
         try {
             File tempFile = tempPath.toFile();
             if (tempFile.exists()) tempFile.delete();
             tempFile.createNewFile();
         } catch (IOException e) {e.printStackTrace();}
         
-        Couple<Boolean, String> results = null;
+        boolean result = false;
         try (FileChannel iChannel = FileChannel.open(path, StandardOpenOption.READ);
             FileChannel oChannel = FileChannel.open(tempPath, StandardOpenOption.APPEND)) {
             String[] fields = item.getFields();
@@ -220,16 +134,110 @@ public class GenericRepository<E, F extends ItemInitializer<F> & Identifiable<E>
                 updatedItem += DIVIDER + field;
             }
             updatedItem = updatedItem.substring(1);
-            results = tryToModify(item.getId(), updatedItem, iChannel, oChannel);
-            if (results.getDx() != null && !results.getDx().isEmpty()) {
-                handleSplitTuple(results.getDx(), iChannel, oChannel);
-            }
-            copyRemainingData(iChannel, oChannel);
+            result = modify(item.getId(), updatedItem, iChannel, oChannel);
         } catch (IOException e) {e.printStackTrace();}
         
         try {
             Files.move(tempPath, path, StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {e.printStackTrace();}
-        return results.getSx();
+        return result;
+    }
+
+    public boolean delete(E id) {
+        if (findById(id) == null)
+            return false;
+        try {
+            File tempFile = tempPath.toFile();
+            if (tempFile.exists()) tempFile.delete();
+            tempFile.createNewFile();
+        } catch (IOException e) {e.printStackTrace();}
+        
+        boolean result = false;
+        try (FileChannel iChannel = FileChannel.open(path, StandardOpenOption.READ);
+            FileChannel oChannel = FileChannel.open(tempPath, StandardOpenOption.APPEND)) {
+            result = modify(id, null, iChannel, oChannel);
+        } catch (IOException e) {e.printStackTrace();}
+        
+        try {
+            if (result)
+                Files.move(tempPath, path, StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException e) {e.printStackTrace();}
+        return result;
+    }
+
+    private boolean modify(E id, String content, FileChannel iChannel, FileChannel oChannel) throws IOException {
+        boolean found = false;
+        ByteBuffer iBuffer, oBuffer, truncated = ByteBuffer.allocate(0), tooShortBlock = ByteBuffer.allocate(0);
+        while (!found) {
+            if (iChannel.position() == iChannel.size())
+                return false;
+            iBuffer = ByteBuffer.allocate(truncated.capacity() + 4096);
+            iBuffer.put(truncated);
+            iChannel.read(iBuffer);
+                
+            Couple<List<String>, ByteBuffer> result = getTuples(iBuffer.slice(0, iBuffer.position()));
+            List<String> tuples = result.getSx();
+            truncated = result.getDx();
+            if (tuples.isEmpty()) continue;
+
+            String oChunk = "";
+            for (String tuple: tuples) {
+                String[] fields = tuple.split(String.valueOf(DIVIDER));
+                if (!model.getNewItem(fields).getId().equals(id))
+                    oChunk += tuple + TERMINATOR;
+                else {
+                    if (content != null && !content.isEmpty())
+                        oChunk += content + TERMINATOR;
+                    found = true;
+                }
+            }
+
+            ByteBuffer temp = ByteBuffer.wrap(oChunk.getBytes(StandardCharsets.UTF_8));
+            oBuffer = ByteBuffer.allocate(tooShortBlock.capacity() + temp.capacity());
+            oBuffer.put(tooShortBlock);
+            oBuffer.put(temp);
+            oBuffer.flip();
+            
+            tooShortBlock = writeData(found, oBuffer, truncated, iChannel, oChannel);
+        }
+        return true;
+    }
+
+    private ByteBuffer writeData(boolean found, ByteBuffer oBuffer, ByteBuffer truncated, FileChannel iChannel, FileChannel oChannel) throws IOException {
+        int oCapacity = oBuffer.capacity();
+        ByteBuffer tooShortBlock = ByteBuffer.allocate(0);
+        while (oCapacity >= 4096) {
+            oChannel.write(oBuffer.slice(0, 4096));
+            oCapacity = oCapacity - 4096;
+            if (oCapacity != 0)
+                oBuffer = oBuffer.slice(4096, oCapacity);
+        }
+        if (oCapacity != 0) {
+            if (iChannel.position() == iChannel.size())
+                oChannel.write(oBuffer);
+            else {
+                tooShortBlock = oBuffer;
+                if (found) {
+                    ByteBuffer surplus = ByteBuffer.allocate(tooShortBlock.capacity() + truncated.capacity());
+                    surplus.put(tooShortBlock);
+                    surplus.put(truncated);
+                    surplus.flip();
+                    long bytesRead;
+                    int extraCapacity = surplus.capacity(), chunkLength;
+                    while ((bytesRead = iChannel.position()) < iChannel.size()) {
+                        chunkLength = (iChannel.size() - bytesRead < 4096) ? (int) (iChannel.size() - bytesRead) : 4096;
+                        oBuffer = ByteBuffer.allocate(extraCapacity + chunkLength);
+                        oBuffer.put(surplus);
+                        iChannel.read(oBuffer);
+                        oBuffer.flip();
+                        surplus = oBuffer.slice(chunkLength, extraCapacity);
+                        oChannel.write(oBuffer.slice(0, chunkLength));
+                    }
+                    if (extraCapacity != 0)
+                        oChannel.write(surplus);
+                }
+            }
+        }
+        return tooShortBlock;
     }
 }
