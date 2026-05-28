@@ -30,41 +30,36 @@ public class ShowService {
         List<Show> result = new ArrayList<>();
         MovieDAO mDao = new MovieDAO();
         for (Show s : sDao.findAll()) {
-            boolean ok = true;
             Movie mov = mDao.findById(s.getMovieId());
             if (partialTitle != null && !partialTitle.isBlank()) {
                 if (!mov.getTitle().toLowerCase().contains(partialTitle.toLowerCase())) {
-                    ok = false;
+                    continue;
                 }
             }
             if (genre!= null && !genre.isBlank()) {
                 if (!mov.getGenre().equalsIgnoreCase(genre)) {
-                    ok = false;
+                    continue;
                 }
             }
             if (from != null && s.getShowDate().isBefore(from)) {
-                ok = false;
+                continue;
             }
             if (to != null && s.getShowDate().isAfter(to)) {
-                ok = false;
+                continue;
             }
             if (minCost != null && s.getTicketCost() < minCost) {
-                ok = false;
+                continue;
             }
             if (maxCost != null && s.getTicketCost() > maxCost) {
-                ok = false;
+                continue;
             }
-            if (ok) {
-                result.add(s);
-            }
+            result.add(s);
         }
         return result;
     }
 
     public String[] visualizeShow(Long showId) {
         Show s = sDao.findById(showId);
-        if (s == null) return null;
-        User client =
         int seatsTaken = sDao.countTicketByShow(idShow);
         int seatsFree = 200 - seatsTaken;
         return new showDetails(s, seatsFree);

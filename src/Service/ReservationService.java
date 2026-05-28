@@ -4,12 +4,12 @@ import DataAccessObject.MovieDAO;
 import DataAccessObject.ReservationDAO;
 import DataAccessObject.ShowDAO;
 import DataAccessObject.UserDAO;
-import Model.Movie;
-import Model.Reservation;
-import Model.Show;
-import Model.User;
+import Model.*;
 
+import java.sql.Array;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 public class ReservationService {
@@ -84,7 +84,69 @@ public class ReservationService {
         return new ReservationDetails(r, c, s, m);
     }
 
-    public List<Reservation> searchReservations() {
+    public List<Reservation> searchReservations(Long reservationId, String name,
+                                                String surname, String partialTitle,
+                                                LocalDate from, LocalDate to) {
+        List<Reservation> result = new ArrayList<>();
+        for (Reservation r: rDao.findAll()) {
+            boolean ok = true;
 
+            if (reservationId != null && !r.getId().equals(reservationId))
+                continue;
+
+            if (name != null && !name.isBlank()) {
+                List<User> userList = uDao.findAll();
+                String username = r.getUsername();
+                for (User u : userList)
+                    if (u.getId().equals(username)) {
+                        if (!name.equals(u.getName()) || !surname.equals(u.getSurname()))
+                            ok = false;
+                        break;
+                    }
+
+                if (!ok) continue;
+            }
+
+            if (from != null || to != null || (partialTitle != null && !partialTitle.isBlank())) {
+                List<Show> showList = sDao.findAll();
+                Long showId = r.getShowId();
+                if (from != null || to != null) {
+                    for (Show s : showList)
+                        if (s.getId().equals(showId)) {
+                            if ((from != null && s.getShowDate().isBefore(from)) ||
+                                    (to != null && s.getShowDate().isAfter(to)))
+                                ok = false;
+                            break;
+                        }
+
+                    if (!ok) continue;
+                }
+                if (partialTitle != null && !partialTitle.isBlank()) {
+                    boolean stop = false;
+
+                    for (Show s : showList) {
+                        if (s.getId().equals(showId)) {
+                            Long foundShowId = s.getId();
+                            List<Movie> movieList = mDao.findAll();
+                            for (Movie m : movieList)
+                                if (m.getId().equals(foundShowId)) {
+                                    if (!partialTitle.equals(m.getTitle())) //!!! Utilizzare Levenstein
+                                        ok = false;
+                                    else
+                                        stop = true;
+                                    break;
+                                }
+                            if (!ok || stop)
+                                break;
+                        }
+                    }
+
+                    if (!ok) continue;
+                }
+            }
+
+            result.add(r);
+        }
+        return result;
     }
 }

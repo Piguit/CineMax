@@ -7,7 +7,7 @@ public class Reservation implements ItemInitializer<Reservation>, Identifiable<L
     private String username;
     private long showId;
     private byte ticketsNumber;
-    private LocalDateTime showTime;
+    //private LocalDateTime showTime;
 
     public Reservation() {}
 
@@ -33,7 +33,7 @@ public class Reservation implements ItemInitializer<Reservation>, Identifiable<L
 
     public String[] getFields(){
         return new String[]{String.valueOf(reservationId), username, String.valueOf(showId),
-                String.valueOf(ticketsNumber), String.valueOf(showTime)} ;
+                String.valueOf(ticketsNumber)/*, String.valueOf(showTime)*/} ;
     }
 
     public String getUsername(){return username; }
@@ -42,7 +42,7 @@ public class Reservation implements ItemInitializer<Reservation>, Identifiable<L
 
     public byte getTicketsNumber(){return ticketsNumber; }
 
-    public LocalDateTime getShowTime() {return showTime; }
+    //public LocalDateTime getShowTime() {return showTime; }
 
     public void setReservationId(Long reservationId){this.reservationId = reservationId; }
 
@@ -52,7 +52,7 @@ public class Reservation implements ItemInitializer<Reservation>, Identifiable<L
 
     public void setTicketsNumber(byte ticketsNumber){this.ticketsNumber = ticketsNumber; }
 
-    public void setShowTime(LocalDateTime showTime){this.showTime = showTime; }
+    //public void setShowTime(LocalDateTime showTime){this.showTime = showTime; }
 
     public String toString() {
         String result = "";
