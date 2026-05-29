@@ -4,9 +4,8 @@ import java.io.IOException;
 import java.util.List;
 
 import Model.User;
-import Repository.GenericRepository;
 
-public class UserRepository {
+public class UserRepository implements FileRepository<User, String> {
     public static final String FILE_NAME = "user_repository.txt";
     private GenericRepository<String, User> r;
 
@@ -38,5 +37,9 @@ public class UserRepository {
 
     public boolean update(User movie) {
         return r.update(movie);
+    }
+
+    public String getMaxId() {
+        return r.getMaxId();
     }
 }

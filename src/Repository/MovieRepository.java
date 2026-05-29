@@ -4,9 +4,8 @@ import java.io.IOException;
 import java.util.List;
 
 import Model.Movie;
-import Repository.GenericRepository;
 
-public class MovieRepository {
+public class MovieRepository implements FileRepository<Movie, Long> {
     public static final String FILE_NAME = "movie_repository.txt";
     private GenericRepository<Long, Movie> r;
 
@@ -18,13 +17,13 @@ public class MovieRepository {
             System.err.println("Impossibile creare collegamento con la base di dati.");
             System.exit(0);
         }
-    };
+    }
 
     public List<Movie> findAll() {
         return r.findAll();
     }
 
-    public Movie findById(long id) {
+    public Movie findById(Long id) {
         return r.findById(id);
     }
 
@@ -32,11 +31,15 @@ public class MovieRepository {
         return r.save(movie);
     }
 
-    public boolean delete(long id) {
+    public boolean delete(Long id) {
         return r.delete(id);
     }
 
     public boolean update(Movie movie) {
         return r.update(movie);
+    }
+
+    public Long getMaxId() {
+        return r.getMaxId();
     }
 }
