@@ -8,6 +8,8 @@ import Model.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.chrono.ChronoLocalDate;
+import java.time.chrono.ChronoLocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,7 +42,7 @@ public class ReservationService {
         if (seatsTaken + ticketsNumber > 200) {
             throw new IllegalStateException("Insufficient seats. Available: " + (200 - seatsTaken));
         }
-        Long reservationId = rRepo.generateNextId();
+        Long reservationId = rRepo.getMaxId() + 1;
         Reservation newR = new Reservation(reservationId, username, s.getMovieId(), ticketsNumber);
         rRepo.insert(newR);
         return reservationId;
@@ -114,8 +116,9 @@ public class ReservationService {
                 if (from != null || to != null) {
                     for (Show s : showList)
                         if (s.getId().equals(showId)) {
-                            if ((from != null && s.getShowDate().isBefore(from)) ||
-                                    (to != null && s.getShowDate().isAfter(to)))
+                            LocalDateTime date = s.getShowDate();
+                            if ((from != null && (date.getYear() < from.getYear() || date.getDayOfYear() < from.getDayOfYear())) ||
+                                    (to != null && (date.getYear() > to.getYear() || date.getDayOfYear() > to.getDayOfYear())))
                                 ok = false;
                             break;
                         }

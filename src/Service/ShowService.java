@@ -5,7 +5,7 @@ import Repository.ReservationRepository;
 import Repository.ShowRepository;
 import Model.Movie;
 import Model.Show;
-import Model.User;
+import Model.ShowDetails;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -42,10 +42,11 @@ public class ShowService {
                     continue;
                 }
             }
-            if (from != null && s.getShowDate().isBefore(from)) {
+            LocalDateTime date = s.getShowDate();
+            if (from != null && (date.getYear() < from.getYear() || date.getDayOfYear() < from.getDayOfYear())) {
                 continue;
             }
-            if (to != null && s.getShowDate().isAfter(to)) {
+            if (from != null && (date.getYear() > to.getYear() || date.getDayOfYear() > to.getDayOfYear())) {
                 continue;
             }
             if (minCost != null && s.getTicketCost() < minCost) {
@@ -59,11 +60,12 @@ public class ShowService {
         return result;
     }
 
-    public String[] visualizeShow(Long showId) {
+    public ShowDetails visualizeShow(Long showId) {
         Show s = sRepo.findById(showId);
-        int seatsTaken = countTicketsByShow(rRepo, showId);
-        int seatsFree = 200 - seatsTaken;
-        return new showDetails(s, seatsFree);
+        Movie m = mRepo.findById(s.getMovieId());
+        int takenSeats = countTicketsByShow(rRepo, showId);
+        int freeSeats = 200 - takenSeats;
+        return new ShowDetails(s, m, freeSeats);
     }
 
     public void addShow(Movie movie, LocalDateTime showDate, Float ticketCost) {
@@ -74,13 +76,13 @@ public class ShowService {
                 throw new IllegalStateException("Overlap with the show " + s.getId());
             }
         }
-        Long id = sRepo.generateNextId();
+        Long id = sRepo.getMaxId() + 1;
         Show newS = new Show(id, movie.getId(), showDate, ticketCost);
         sRepo.insert(newS);
     }
 
     public boolean anyReservationForTheShow(Long showId){
-        return !rRepo.findAll().stream().filter(p -> p.getShowId() == showId).toList().isEmpty();
+        return !rRepo.findAll().stream().filter(p -> p.getShowId().equals(showId)).toList().isEmpty();
     }
 
     public void editShow(Long showId, LocalDateTime newShowDate, Float newTicketCost) {

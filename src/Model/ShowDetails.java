@@ -11,8 +11,9 @@ public class ShowDetails {
     private String runningTime;
     private String showDate;
     private String ticketCost;
+    private String freeSeats;
 
-    public ShowDetails(Movie movie, Show show) {
+    public ShowDetails(Show show, Movie movie, int freeSeats) {
         this.showId = String.valueOf(show.getId());
         this.title = movie.getTitle();
         this.genre = movie.getGenre();
@@ -21,11 +22,12 @@ public class ShowDetails {
         this.runningTime = String.valueOf(movie.getRunningTime());
         this.showDate = String.valueOf(show.getShowDate());
         this.ticketCost = String.valueOf(show.getTicketCost());
+        this.freeSeats = String.valueOf(freeSeats);
     }
 
     public String toString() {
-        return "RIEPILOGO PROIEZIONE: " + showId + "|" + title + "|"
-                + genre + "|" + director + "|" + year + "|" + runningTime
-                + "|" + showDate + "|" + ticketCost + "|";
+        return "RIEPILOGO PROIEZIONE:" + "\nid: " + showId + "\ntitolo: " + title + "\ngenere: " + genre + "\nregista: "
+                + director + "\nanno: " + year + "\ndurata: " + runningTime + "\ndata e orario: "
+                + showDate + "\ncosto del biglietto: " + ticketCost + "\nposti disponibili: " + freeSeats;
     }
 }
