@@ -1,86 +1,87 @@
 package Service;
 
-import DataAccessObject.MovieDAO;
-import DataAccessObject.ReservationDAO;
-import DataAccessObject.ShowDAO;
-import DataAccessObject.UserDAO;
+import Repository.MovieRepository;
+import Repository.ReservationRepository;
+import Repository.ShowRepository;
+import Repository.UserRepository;
 import Model.*;
 
-import java.sql.Array;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ReservationService {
-    private final ReservationDAO rDao;
-    private final ShowDAO sDao;
-    private final UserDAO uDao;
-    private final MovieDAO mDao;
+import static Utility.TicketsHandler.countTicketsByShow;
 
-    public ReservationService(ReservationDAO rDao, ShowDAO sDao, UserDAO uDao, MovieDAO mDao) {
-        this.rDao = rDao;
-        this.sDao = sDao;
-        this.uDao = uDao;
-        this.mDao = mDao;
+public class ReservationService {
+    private final ReservationRepository rRepo;
+    private final ShowRepository sRepo;
+    private final UserRepository uRepo;
+    private final MovieRepository mRepo;
+
+    public ReservationService(ReservationRepository rRepo, ShowRepository sRepo,
+                              UserRepository uRepo, MovieRepository mRepo) {
+        this.rRepo = rRepo;
+        this.sRepo = sRepo;
+        this.uRepo = uRepo;
+        this.mRepo = mRepo;
     }
 
 
     public List<Reservation> userReservations(String username) {
-        return rDao.findAll().stream().filter(r -> r.getUsername().equals(username)).toList();
+        return rRepo.findAll().stream().filter(r -> r.getUsername().equals(username)).toList();
 
     }
 
-    public String addReservation(String username, Long showId, byte ticketsNumber) {
-        Show s = sDao.findById(showId);
+    public Long addReservation(String username, Long showId, Byte ticketsNumber) {
+        Show s = sRepo.findById(showId);
         if (s == null) throw new IllegalArgumentException("Inexistent show");
-        int seatsTaken = sDao.countTicketsByShow(showId);
+        int seatsTaken = countTicketsByShow(rRepo, showId);
         if (seatsTaken + ticketsNumber > 200) {
             throw new IllegalStateException("Insufficient seats. Available: " + (200 - seatsTaken));
         }
-        String reservationId = rDao.generateNextId();
-        Reservation newR = new Reservation(reservationId, username, String.valueOf(s.getMovieId()),
-                String.valueOf(ticketsNumber), String.valueOf(s.getShowDate()));
-        rDao.insert(newR);
+        Long reservationId = rRepo.generateNextId();
+        Reservation newR = new Reservation(reservationId, username, s.getMovieId(), ticketsNumber);
+        rRepo.insert(newR);
         return reservationId;
     }
 
     public void editReservation(Long reservationId, Long newShowId) {
-        Reservation r = rDao.findById(reservationId);
+        Reservation r = rRepo.findById(reservationId);
         if (r == null) throw new IllegalArgumentException("Inexistent reservation");
-        Reservation oldR = sDao.findById(r.getShowId());
-        Reservation newR = sDao.findById(newShowId);
+        Show oldS = sRepo.findById(r.getShowId());
+        Show newS = sRepo.findById(newShowId);
 
-        if (oldR == null || newR == null) throw new IllegalArgumentException("Inexistent show");
-        if ((sDao.findById(oldR.getShowId()).getShowDate()).isBefore(LocalDateTime.now()) ||
-                ((sDao.findById(newR.getShowId()).getShowDate()).isBefore(LocalDateTime.now())) {
+        if (oldS == null || newS == null) throw new IllegalArgumentException("Inexistent show");
+        if (oldS.getShowDate().isBefore(LocalDateTime.now()) ||
+                (newS.getShowDate()).isBefore(LocalDateTime.now())) {
             throw new IllegalStateException("Both shows must not have been projected");
         }
 
-        int seatsTaken = sDao.countTicketsByShow(newShowId);
+        int seatsTaken = countTicketsByShow(rRepo, newShowId);
         if (seatsTaken + r.getTicketsNumber() > 200) {
             throw new IllegalStateException("There is not a sufficient number of available seats in the new show");
         }
         r.setShowId(newShowId);
-        rDao.insert(r);
+        rRepo.insert(r);
     }
 
     public void deleteReservation(Long reservationId) {
-        Reservation r = rDao.findById(reservationId);
+        Reservation r = rRepo.findById(reservationId);
         if (r == null) throw new IllegalArgumentException("Non existent reservation");
-        Show s = sDao.findById(r.getShowId());
+        Show s = sRepo.findById(r.getShowId());
         if (s.getShowDate().isAfter(LocalDateTime.now())) {
             throw new IllegalStateException("You can delete the reservation only after the show");
         }
-        rDao.delete(reservationId);
+        rRepo.delete(reservationId);
     }
 
     public ReservationDetails visualizeReservation(Long reservationId) {
-        Reservation r = rDao.findById(reservationId);
+        Reservation r = rRepo.findById(reservationId);
         if (r == null) return null;
-        User c = uDao.findById(r.getUsername());
-        Show s = sDao.findById(r.getShowId());
-        Movie m = mDao.findById(s.getMovieId());
+        User c = uRepo.findById(r.getUsername());
+        Show s = sRepo.findById(r.getShowId());
+        Movie m = mRepo.findById(s.getMovieId());
         return new ReservationDetails(r, c, s, m);
     }
 
@@ -88,14 +89,14 @@ public class ReservationService {
                                                 String surname, String partialTitle,
                                                 LocalDate from, LocalDate to) {
         List<Reservation> result = new ArrayList<>();
-        for (Reservation r: rDao.findAll()) {
+        for (Reservation r: rRepo.findAll()) {
             boolean ok = true;
 
             if (reservationId != null && !r.getId().equals(reservationId))
                 continue;
 
             if (name != null && !name.isBlank()) {
-                List<User> userList = uDao.findAll();
+                List<User> userList = uRepo.findAll();
                 String username = r.getUsername();
                 for (User u : userList)
                     if (u.getId().equals(username)) {
@@ -108,7 +109,7 @@ public class ReservationService {
             }
 
             if (from != null || to != null || (partialTitle != null && !partialTitle.isBlank())) {
-                List<Show> showList = sDao.findAll();
+                List<Show> showList = sRepo.findAll();
                 Long showId = r.getShowId();
                 if (from != null || to != null) {
                     for (Show s : showList)
@@ -127,7 +128,7 @@ public class ReservationService {
                     for (Show s : showList) {
                         if (s.getId().equals(showId)) {
                             Long foundShowId = s.getId();
-                            List<Movie> movieList = mDao.findAll();
+                            List<Movie> movieList = mRepo.findAll();
                             for (Movie m : movieList)
                                 if (m.getId().equals(foundShowId)) {
                                     if (!partialTitle.equals(m.getTitle())) //!!! Utilizzare Levenstein

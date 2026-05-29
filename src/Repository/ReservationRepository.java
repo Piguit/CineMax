@@ -1,4 +1,4 @@
-package DataAccessObject;
+package Repository;
 
 import Model.Reservation;
 import Model.Show;
@@ -7,11 +7,11 @@ import Repository.GenericRepository;
 import java.io.IOException;
 import java.util.List;
 
-public class ReservationDAO {
+public class ReservationRepository {
     public static final String FILE_NAME = "Reservation_repository.txt";
     private GenericRepository<Long, Reservation> r;
 
-    public ReservationDAO() {
+    public ReservationRepository() {
         try {
             this.r = new GenericRepository<>(new Reservation(), FILE_NAME);
         } catch (IOException e) {

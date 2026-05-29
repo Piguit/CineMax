@@ -1,4 +1,4 @@
-package DataAccessObject;
+package Repository;
 
 import java.io.IOException;
 import java.util.List;
@@ -6,11 +6,11 @@ import java.util.List;
 import Model.User;
 import Repository.GenericRepository;
 
-public class UserDAO {
+public class UserRepository {
     public static final String FILE_NAME = "user_repository.txt";
     private GenericRepository<String, User> r;
 
-    public UserDAO() {
+    public UserRepository() {
         try {
             this.r = new GenericRepository<>(new User(), FILE_NAME);
         } catch (IOException e) {

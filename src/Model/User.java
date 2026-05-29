@@ -13,24 +13,14 @@ public class User implements ItemInitializer<User>, Identifiable<String> {
 
     public User() {}
 
-    public User(String username, String name, String surname, String password, String birthDate, String residence, String role) {
+    public User(String username, String name, String surname, String password, LocalDate birthDate, String residence, Role role) {
         this.username = username;
         this.name = name;
         this.surname = surname;
         this.password = password;
-        this.birthDate = LocalDate.parse(birthDate);
+        this.birthDate = birthDate;
         this.residence = residence;
-        switch (role) {
-            case "CLIENT":
-            this.role = Role.CLIENT;
-            break;
-            case "PROJECTIONIST":
-                this.role = Role.PROJECTIONIST;
-                break;
-            default:
-                this.role = Role.BOXOFFICECLERK;
-                break;
-        }
+        this.role = role;
     }
 
     public User(String[] array) {
@@ -40,7 +30,17 @@ public class User implements ItemInitializer<User>, Identifiable<String> {
         this.password = array[3];
         this.birthDate = LocalDate.parse(array[4]);
         this.residence = array[5];
-        this.role = array[6];
+        switch (array[6]) {
+            case "CLIENT":
+                this.role = Role.CLIENT;
+                break;
+            case "PROJECTIONIST":
+                this.role = Role.PROJECTIONIST;
+                break;
+            default:
+                this.role = Role.BOXOFFICECLERK;
+                break;
+        }
     }
 
     public User getNewItem(String[] fields) {
@@ -52,12 +52,9 @@ public class User implements ItemInitializer<User>, Identifiable<String> {
     }
 
     public String[] getFields(){
-        return new String[]{username, name, surname, password, String.valueOf(birthDate), residence, role};
+        return new String[]{username, name, surname, password, String.valueOf(birthDate), residence, role.name()};
     }
 
-    public String getUsername() {
-        return username;
-    }
     public String getName(){
         return name;
     }
@@ -73,7 +70,7 @@ public class User implements ItemInitializer<User>, Identifiable<String> {
     public String getResidence(){
         return residence;
     }
-    public String getRole(){
+    public Role getRole(){
         return role;
     }
 
@@ -95,7 +92,7 @@ public class User implements ItemInitializer<User>, Identifiable<String> {
     public void setResidence(String residence){
         this.residence = residence;
     }
-    public void setRole(String role){
+    public void setRole(Role role){
         this.role = role;
     }
 }

@@ -1,8 +1,8 @@
 package Service;
 
-import DataAccessObject.MovieDAO;
-import DataAccessObject.ReservationDAO;
-import DataAccessObject.ShowDAO;
+import Repository.MovieRepository;
+import Repository.ReservationRepository;
+import Repository.ShowRepository;
 import Model.Movie;
 import Model.Show;
 import Model.User;
@@ -12,25 +12,26 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ShowService {
-    private final ShowDAO sDao;
-    private final ReservationDAO rDao;
-    private final MovieDAO mDao;
+import static Utility.TicketsHandler.countTicketsByShow;
 
-    public ShowService(ShowDAO sDao,
-                ReservationDAO rDao, MovieDAO mDao) {
-        this.sDao = sDao;
-        this.rDao = rDao;
-        this.mDao = mDao;
+public class ShowService {
+    private final ShowRepository sRepo;
+    private final ReservationRepository rRepo;
+    private final MovieRepository mRepo;
+
+    public ShowService(ShowRepository sRepo,
+                ReservationRepository rRepo, MovieRepository mRepo) {
+        this.sRepo = sRepo;
+        this.rRepo = rRepo;
+        this.mRepo = mRepo;
     }
 
     public List<Show> searchShow(String partialTitle, String genre,
                                  LocalDate from, LocalDate to,
                                  Double minCost, Double maxCost) {
         List<Show> result = new ArrayList<>();
-        MovieDAO mDao = new MovieDAO();
-        for (Show s : sDao.findAll()) {
-            Movie mov = mDao.findById(s.getMovieId());
+        for (Show s : sRepo.findAll()) {
+            Movie mov = mRepo.findById(s.getMovieId());
             if (partialTitle != null && !partialTitle.isBlank()) {
                 if (!mov.getTitle().toLowerCase().contains(partialTitle.toLowerCase())) {
                     continue;
@@ -59,31 +60,31 @@ public class ShowService {
     }
 
     public String[] visualizeShow(Long showId) {
-        Show s = sDao.findById(showId);
-        int seatsTaken = sDao.countTicketByShow(idShow);
+        Show s = sRepo.findById(showId);
+        int seatsTaken = countTicketsByShow(rRepo, showId);
         int seatsFree = 200 - seatsTaken;
         return new showDetails(s, seatsFree);
     }
 
-    public void addShow(Movie movie, LocalDateTime showDate, float ticketCost) {
+    public void addShow(Movie movie, LocalDateTime showDate, Float ticketCost) {
         LocalDateTime endNew = showDate.plusMinutes(movie.getRunningTime());
-        for (Show s : sDao.findAll()) {
-            LocalDateTime endS = s.getShowDate().plusMinutes(mDao.findById(s.getMovieId()).getRunningTime());
+        for (Show s : sRepo.findAll()) {
+            LocalDateTime endS = s.getShowDate().plusMinutes(mRepo.findById(s.getMovieId()).getRunningTime());
             if (showDate.isBefore(endS) && endNew.isAfter(s.getShowDate())) {
                 throw new IllegalStateException("Overlap with the show " + s.getId());
             }
         }
-        Long id = sDao.generateNextId();
+        Long id = sRepo.generateNextId();
         Show newS = new Show(id, movie.getId(), showDate, ticketCost);
-        sDao.insert(newS);
+        sRepo.insert(newS);
     }
 
     public boolean anyReservationForTheShow(Long showId){
-        return !rDao.findAll().stream().filter(p -> p.getShowId() == showId).toList().isEmpty();
+        return !rRepo.findAll().stream().filter(p -> p.getShowId() == showId).toList().isEmpty();
     }
 
-    public void editShow(Long showId, LocalDateTime newShowDate, float newTicketCost) {
-        Show s = sDao.findById(showId);
+    public void editShow(Long showId, LocalDateTime newShowDate, Float newTicketCost) {
+        Show s = sRepo.findById(showId);
         if (s == null) {
             throw new IllegalArgumentException("Inexistent show");
         }
@@ -92,17 +93,17 @@ public class ShowService {
         }
         if (newShowDate != null) s.setShowDate(newShowDate);
         if (newTicketCost != null) s.setTicketCost(newTicketCost);
-        sDao.insert(s);
+        sRepo.insert(s);
     }
 
-    public void deleteShow(long showId) {
-        Show s = sDao.findById(showId);
+    public void deleteShow(Long showId) {
+        Show s = sRepo.findById(showId);
         if (s == null) {
             throw new IllegalArgumentException("Inexistent show.");
         }
         if (anyReservationForTheShow(showId)) {
             throw new IllegalStateException("Not allowed to delete: reservations for this show exist.");
         }
-        sDao.delete(showId);
+        sRepo.delete(showId);
     }
 }

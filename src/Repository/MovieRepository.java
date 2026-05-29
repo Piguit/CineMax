@@ -1,4 +1,4 @@
-package DataAccessObject;
+package Repository;
 
 import java.io.IOException;
 import java.util.List;
@@ -6,11 +6,11 @@ import java.util.List;
 import Model.Movie;
 import Repository.GenericRepository;
 
-public class MovieDAO {
+public class MovieRepository {
     public static final String FILE_NAME = "movie_repository.txt";
     private GenericRepository<Long, Movie> r;
 
-    public MovieDAO() {
+    public MovieRepository() {
         try {
             this.r = new GenericRepository<>(new Movie(), FILE_NAME);
         } catch (IOException e) {
