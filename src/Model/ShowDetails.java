@@ -26,8 +26,8 @@ public class ShowDetails {
     }
 
     public String toString() {
-        return "RIEPILOGO PROIEZIONE:" + "\nid: " + showId + "\ntitolo: " + title + "\ngenere: " + genre + "\nregista: "
-                + director + "\nanno: " + year + "\ndurata: " + runningTime + "\ndata e orario: "
-                + showDate + "\ncosto del biglietto: " + ticketCost + "\nposti disponibili: " + freeSeats;
+        return "RIEPILOGO PROIEZIONE:" + "\n- id: " + showId + "\n- titolo: " + title + "\n- genere: " + genre + "\n- regista: "
+                + director + "\n- anno: " + year + "\n- durata: " + runningTime + "\n- data e orario: "
+                + showDate + "\n- costo del biglietto: " + ticketCost + "\n- posti disponibili: " + freeSeats;
     }
 }

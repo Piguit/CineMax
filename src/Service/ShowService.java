@@ -6,6 +6,7 @@ import Repository.ShowRepository;
 import Model.Movie;
 import Model.Show;
 import Model.ShowDetails;
+import Utility.TicketsHandler;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -26,7 +27,42 @@ public class ShowService {
         this.mRepo = mRepo;
     }
 
-    public List<Show> searchShow(String partialTitle, String genre,
+    public List<ShowDetails> searchShowsInDetail(String partialTitle, String genre,
+                                        LocalDate from, LocalDate to,
+                                        Double minCost, Double maxCost) {
+        List<ShowDetails> result = new ArrayList<>();
+        for (Show s : sRepo.findAll()) {
+            Movie mov = mRepo.findById(s.getMovieId());
+            if (partialTitle != null && !partialTitle.isBlank()) {
+                if (!mov.getTitle().toLowerCase().contains(partialTitle.toLowerCase())) {
+                    continue;
+                }
+            }
+            if (genre!= null && !genre.isBlank()) {
+                if (!mov.getGenre().equalsIgnoreCase(genre)) {
+                    continue;
+                }
+            }
+            LocalDateTime date = s.getShowDate();
+            if (from != null && (date.getYear() < from.getYear() || date.getDayOfYear() < from.getDayOfYear())) {
+                continue;
+            }
+            if (from != null && (date.getYear() > to.getYear() || date.getDayOfYear() > to.getDayOfYear())) {
+                continue;
+            }
+            if (minCost != null && s.getTicketCost() < minCost) {
+                continue;
+            }
+            if (maxCost != null && s.getTicketCost() > maxCost) {
+                continue;
+            }
+            result.add(new ShowDetails(s, mov, 200 - TicketsHandler.countTicketsByShow(rRepo, s.getId())));
+        }
+        return result;
+    }
+
+// da deprecare?
+    public List<Show> searchShows(String partialTitle, String genre,
                                  LocalDate from, LocalDate to,
                                  Double minCost, Double maxCost) {
         List<Show> result = new ArrayList<>();

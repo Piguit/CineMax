@@ -24,9 +24,9 @@ public class ReservationDetails {
     }
 
     public String toString() {
-        return "RIEPILOGO PRENOTAZIONE:" + "\nid: " + reservationId + "\nnome: " + name
-                + "\ncognome: " + surname + "\ndata e orario: " + showDate + "\nnumero di biglietti: " + ticketsNumber
-                + "\ncosto del biglietto: " + ticketCost + "\ncosto totale: " + totalCost + "\nfilm: " + title;
+        return "RIEPILOGO PRENOTAZIONE:" + "\n- id: " + reservationId + "\n- nome: " + name
+                + "\n- cognome: " + surname + "\n- data e orario: " + showDate + "\n- numero di biglietti: " + ticketsNumber
+                + "\n- costo del biglietto: " + ticketCost + "\n- costo totale: " + totalCost + "\n- film: " + title;
     }
 }
 
