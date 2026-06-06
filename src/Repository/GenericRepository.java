@@ -2,7 +2,8 @@ package Repository;
 import Model.ItemInitializer;
 import Model.Identifiable;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
@@ -13,13 +14,14 @@ import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 
-public class GenericRepository<E, F extends ItemInitializer<F> & Identifiable<E>> {
+public class GenericRepository<E extends Comparable<E>, F extends ItemInitializer<F> & Identifiable<E>> {
+    private static final int PAGE_DIMENSION = 16384;
+    private static final char DIVIDER = '~';
+    private static final char TERMINATOR = '\n';
+    
     private final F model;
     private final Path path;
     private final Path tempPath;
-
-    private final char DIVIDER = '~';
-    private final char TERMINATOR = '\n';
 
     private static class Couple<S, D> {
         private S sx;
@@ -38,41 +40,45 @@ public class GenericRepository<E, F extends ItemInitializer<F> & Identifiable<E>
             return dx;
         }
     }
-
-    public GenericRepository(F model, String fileName) throws IOException {
+    
+    public GenericRepository(F model, String fileName) {
         this.model = model;
         this.path = Path.of("data", fileName);
         this.tempPath = Path.of("data", "temp_" + fileName);
         File file = path.toFile();
         if (!file.exists())
-            file.createNewFile();
+            try {
+                file.createNewFile();
+            } catch (IOException e) {
+                throw new FileException("<!> Non e' stato possibile creare il file " + path + ". Controllare i privilegi della cartella.");
+            }
     }
 
-    private Couple<List<String>, ByteBuffer> getTuples(ByteBuffer buffer) throws IOException {
+    private Couple<List<String>, ByteBuffer> getTuples(ByteBuffer buffer) {
         List<String> tuples = new ArrayList<>();
-        int chunkLength = buffer.capacity(), beginning = 0;
+        int chunkLength = buffer.capacity(), start = 0;
         ByteBuffer truncated = ByteBuffer.allocate(0);
         for (int end = 0; end < chunkLength; end++) {
-            if (buffer.get(end) == (byte) TERMINATOR) {
-                String tuple = StandardCharsets.UTF_8.decode(buffer.slice(beginning, end - beginning)).toString();
+            if (buffer.get(end) == TERMINATOR) {
+                String tuple = StandardCharsets.UTF_8.decode(buffer.slice(start, end - start)).toString();
                 if (!tuple.isEmpty())
                     tuples.add(tuple);
-                beginning = end + 1;
+                start = end + 1;
             }
         }
         try {
-            truncated = buffer.slice(beginning, chunkLength - beginning);
+            truncated = buffer.slice(start, chunkLength - start);
         } catch (IndexOutOfBoundsException e) {}
 
         return new Couple<>(tuples, truncated);
     }
 
     public List<F> findAll() {
+        List<F> list = new ArrayList<>();
         try (FileChannel channel = FileChannel.open(path, StandardOpenOption.READ)) {
-            List<F> list = new ArrayList<>();
-            ByteBuffer buffer , truncated = ByteBuffer.allocate(0);
+            ByteBuffer truncated = ByteBuffer.allocate(0);
             while (channel.position() < channel.size()) {
-                buffer = ByteBuffer.allocate(truncated.capacity() + 4096);
+                ByteBuffer buffer = ByteBuffer.allocate(truncated.capacity() + PAGE_DIMENSION);
                 buffer.put(truncated);
                 channel.read(buffer);
                 
@@ -81,20 +87,21 @@ public class GenericRepository<E, F extends ItemInitializer<F> & Identifiable<E>
                 truncated = result.getDx();
                 if (tuples.isEmpty()) continue;
 
-                for (String tuple: tuples)
+                for (String tuple : tuples)
                     list.add(model.getNewItem(tuple.split(String.valueOf(DIVIDER))));
             }
-            return list;
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (IOException e) {
+            throw new FileException("<!> Non e' stato possibile leggere dal file " + path + ". Controllare i privilegi della cartella.");
         }
-        return null;
+        return list;
     }
 
     public F findById(E id) {
         List<F> list = findAll();
+        if (list.isEmpty())
+            return null;
         List<F> oneItemList = list.stream().filter(m -> m.getId().equals(id)).toList();
-        return oneItemList.isEmpty() ? null : oneItemList.getFirst();
+        return !oneItemList.isEmpty() ? oneItemList.getFirst() : null;
     }
 
     public boolean save(F item) {
@@ -102,7 +109,7 @@ public class GenericRepository<E, F extends ItemInitializer<F> & Identifiable<E>
             return false;
         String persistent = "";
         String[] itemFields = item.getFields();
-        for (String field: itemFields)
+        for (String field : itemFields)
             persistent += DIVIDER + field;
         persistent = persistent.substring(1) + TERMINATOR;
         try (FileChannel channel = FileChannel.open(path, StandardOpenOption.APPEND)) {
@@ -110,68 +117,76 @@ public class GenericRepository<E, F extends ItemInitializer<F> & Identifiable<E>
             channel.write(buffer);
             return true;
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new FileException("<!> Non e' stato possibile scrivere sul file " + path + ". Controllare i privilegi della cartella.");
         }
-        //Temporaneo
-        return false;
+    }
+
+    private void prepareTempFile() {
+        try {
+            File tempFile = tempPath.toFile();
+            if (tempFile.exists())
+                tempFile.delete();
+            tempFile.createNewFile();
+        } catch (IOException e) {
+            throw new FileException("<!> Non e' stato possibile creare il file " + tempPath + ". Controllare i privilegi della cartella.");
+        }
+    }
+
+    private void overrideFile() {
+        try {
+            Files.move(tempPath, path, StandardCopyOption.REPLACE_EXISTING);
+        } catch (IOException e) {
+            throw new FileException("<!> Non e' stato possibile aggiornare il file " + path + ". Controllare i privilegi della cartella.");
+        }
     }
 
     public boolean update(F item) {
         if (findById(item.getId()) == null)
             return false;
-        try {
-            File tempFile = tempPath.toFile();
-            if (tempFile.exists()) tempFile.delete();
-            tempFile.createNewFile();
-        } catch (IOException e) {e.printStackTrace();}
-        
-        boolean result = false;
+
+        prepareTempFile();
+
         try (FileChannel iChannel = FileChannel.open(path, StandardOpenOption.READ);
             FileChannel oChannel = FileChannel.open(tempPath, StandardOpenOption.APPEND)) {
             String[] fields = item.getFields();
             String updatedItem = "";
-            for (String field: fields) {
+            for (String field : fields) {
                 updatedItem += DIVIDER + field;
             }
             updatedItem = updatedItem.substring(1);
-            result = modify(item.getId(), updatedItem, iChannel, oChannel);
-        } catch (IOException e) {e.printStackTrace();}
+            modify(item.getId(), updatedItem, iChannel, oChannel);
+        } catch (IOException e) {
+            throw new FileException("<!> Non e' stato possibile produrre la versione aggiornata del file " + path + ". Controllare i privilegi della cartella.");
+        }
         
-        try {
-            Files.move(tempPath, path, StandardCopyOption.REPLACE_EXISTING);
-        } catch (IOException e) {e.printStackTrace();}
-        return result;
+        overrideFile();
+        
+        return true;
     }
 
     public boolean delete(E id) {
         if (findById(id) == null)
             return false;
-        try {
-            File tempFile = tempPath.toFile();
-            if (tempFile.exists()) tempFile.delete();
-            tempFile.createNewFile();
-        } catch (IOException e) {e.printStackTrace();}
-        
-        boolean result = false;
+
+        prepareTempFile();
+
         try (FileChannel iChannel = FileChannel.open(path, StandardOpenOption.READ);
             FileChannel oChannel = FileChannel.open(tempPath, StandardOpenOption.APPEND)) {
-            result = modify(id, null, iChannel, oChannel);
-        } catch (IOException e) {e.printStackTrace();}
+            modify(id, null, iChannel, oChannel);
+        } catch (IOException e) {
+            throw new FileException("<!> Non e' stato possibile produrre la versione aggiornata del file " + path + ". Controllare i privilegi della cartella.");
+        }
         
-        try {
-            if (result)
-                Files.move(tempPath, path, StandardCopyOption.REPLACE_EXISTING);
-        } catch (IOException e) {e.printStackTrace();}
-        return result;
+        overrideFile();
+
+        return true;
     }
 
-    private boolean modify(E id, String content, FileChannel iChannel, FileChannel oChannel) throws IOException {
+    private void modify(E id, String content, FileChannel iChannel, FileChannel oChannel) throws IOException {
         boolean found = false;
-        ByteBuffer iBuffer, oBuffer, truncated = ByteBuffer.allocate(0), tooShortBlock = ByteBuffer.allocate(0);
-        while (!found) {
-            if (iChannel.position() == iChannel.size())
-                return false;
-            iBuffer = ByteBuffer.allocate(truncated.capacity() + 4096);
+        ByteBuffer truncated = ByteBuffer.allocate(0), tooShortBlock = ByteBuffer.allocate(0);
+        while (iChannel.position() < iChannel.size()) {
+            ByteBuffer iBuffer = ByteBuffer.allocate(truncated.capacity() + PAGE_DIMENSION);
             iBuffer.put(truncated);
             iChannel.read(iBuffer);
                 
@@ -181,7 +196,7 @@ public class GenericRepository<E, F extends ItemInitializer<F> & Identifiable<E>
             if (tuples.isEmpty()) continue;
 
             String oChunk = "";
-            for (String tuple: tuples) {
+            for (String tuple : tuples) {
                 String[] fields = tuple.split(String.valueOf(DIVIDER));
                 if (!model.getNewItem(fields).getId().equals(id))
                     oChunk += tuple + TERMINATOR;
@@ -193,24 +208,23 @@ public class GenericRepository<E, F extends ItemInitializer<F> & Identifiable<E>
             }
 
             ByteBuffer temp = ByteBuffer.wrap(oChunk.getBytes(StandardCharsets.UTF_8));
-            oBuffer = ByteBuffer.allocate(tooShortBlock.capacity() + temp.capacity());
+            ByteBuffer oBuffer = ByteBuffer.allocate(tooShortBlock.capacity() + temp.capacity());
             oBuffer.put(tooShortBlock);
             oBuffer.put(temp);
             oBuffer.flip();
             
             tooShortBlock = writeData(found, oBuffer, truncated, iChannel, oChannel);
         }
-        return true;
     }
 
     private ByteBuffer writeData(boolean found, ByteBuffer oBuffer, ByteBuffer truncated, FileChannel iChannel, FileChannel oChannel) throws IOException {
         int oCapacity = oBuffer.capacity();
         ByteBuffer tooShortBlock = ByteBuffer.allocate(0);
-        while (oCapacity >= 4096) {
-            oChannel.write(oBuffer.slice(0, 4096));
-            oCapacity = oCapacity - 4096;
+        while (oCapacity >= PAGE_DIMENSION) {
+            oChannel.write(oBuffer.slice(0, PAGE_DIMENSION));
+            oCapacity = oCapacity - PAGE_DIMENSION;
             if (oCapacity != 0)
-                oBuffer = oBuffer.slice(4096, oCapacity);
+                oBuffer = oBuffer.slice(PAGE_DIMENSION, oCapacity);
         }
         if (oCapacity != 0) {
             if (iChannel.position() == iChannel.size())
@@ -225,7 +239,7 @@ public class GenericRepository<E, F extends ItemInitializer<F> & Identifiable<E>
                     long bytesRead;
                     int extraCapacity = surplus.capacity(), chunkLength;
                     while ((bytesRead = iChannel.position()) < iChannel.size()) {
-                        chunkLength = (iChannel.size() - bytesRead < 4096) ? (int) (iChannel.size() - bytesRead) : 4096;
+                        chunkLength = (iChannel.size() - bytesRead < PAGE_DIMENSION) ? (int) (iChannel.size() - bytesRead) : PAGE_DIMENSION;
                         oBuffer = ByteBuffer.allocate(extraCapacity + chunkLength);
                         oBuffer.put(surplus);
                         iChannel.read(oBuffer);
@@ -239,5 +253,13 @@ public class GenericRepository<E, F extends ItemInitializer<F> & Identifiable<E>
             }
         }
         return tooShortBlock;
+    }
+
+    public E getMaxId() {
+        List<F> list = findAll();
+        if (!list.isEmpty())
+            return list.stream().max((a, b) -> a.getId().compareTo(b.getId())).get().getId();
+        else
+            return null;
     }
 }

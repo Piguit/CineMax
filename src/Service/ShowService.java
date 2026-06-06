@@ -1,11 +1,14 @@
 package Service;
 
-import DataAccessObject.MovieDAO;
-import DataAccessObject.ReservationDAO;
-import DataAccessObject.ShowDAO;
+import Repository.MovieRepository;
+import Repository.ReservationRepository;
+import Repository.ShowRepository;
 import Model.Movie;
+import Model.Reservation;
 import Model.Show;
-import Model.User;
+import Model.FullShowDetails;
+import Model.ShowDetails;
+import Utility.TicketsHandler;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -13,38 +16,39 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ShowService {
-    private final ShowDAO sDao;
-    private final ReservationDAO rDao;
-    private final MovieDAO mDao;
+    private final ShowRepository sRepo;
+    private final ReservationRepository rRepo;
+    private final MovieRepository mRepo;
 
-    public ShowService(ShowDAO sDao,
-                ReservationDAO rDao, MovieDAO mDao) {
-        this.sDao = sDao;
-        this.rDao = rDao;
-        this.mDao = mDao;
+    public ShowService(ShowRepository sRepo,
+                ReservationRepository rRepo, MovieRepository mRepo) {
+        this.sRepo = sRepo;
+        this.rRepo = rRepo;
+        this.mRepo = mRepo;
     }
 
-    public List<Show> searchShow(String partialTitle, String genre,
+    public List<ShowDetails> searchShows(String partialTitle, String genre,
                                  LocalDate from, LocalDate to,
-                                 Double minCost, Double maxCost) {
-        List<Show> result = new ArrayList<>();
-        MovieDAO mDao = new MovieDAO();
-        for (Show s : sDao.findAll()) {
-            Movie mov = mDao.findById(s.getMovieId());
+                                 Float minCost, Float maxCost) {
+        List<ShowDetails> result = new ArrayList<>();
+        List<Show> shows = sRepo.findAll();
+        for (Show s : shows) {
+            Movie movie = mRepo.findById(s.getMovieId());
             if (partialTitle != null && !partialTitle.isBlank()) {
-                if (!mov.getTitle().toLowerCase().contains(partialTitle.toLowerCase())) {
+                if (!movie.getTitle().toLowerCase().contains(partialTitle.toLowerCase())) {
                     continue;
                 }
             }
-            if (genre!= null && !genre.isBlank()) {
-                if (!mov.getGenre().equalsIgnoreCase(genre)) {
+            if (genre != null && !genre.isBlank()) {
+                if (!movie.getGenre().equalsIgnoreCase(genre)) {
                     continue;
                 }
             }
-            if (from != null && s.getShowDate().isBefore(from)) {
+            LocalDateTime date = s.getShowDate();
+            if (from != null && (date.getYear() < from.getYear() || date.getDayOfYear() < from.getDayOfYear())) {
                 continue;
             }
-            if (to != null && s.getShowDate().isAfter(to)) {
+            if (to != null && (date.getYear() > to.getYear() || date.getDayOfYear() > to.getDayOfYear())) {
                 continue;
             }
             if (minCost != null && s.getTicketCost() < minCost) {
@@ -53,56 +57,106 @@ public class ShowService {
             if (maxCost != null && s.getTicketCost() > maxCost) {
                 continue;
             }
-            result.add(s);
+            result.add(new ShowDetails(s, movie));
         }
         return result;
     }
 
-    public String[] visualizeShow(Long showId) {
-        Show s = sDao.findById(showId);
-        int seatsTaken = sDao.countTicketByShow(idShow);
-        int seatsFree = 200 - seatsTaken;
-        return new showDetails(s, seatsFree);
-    }
-
-    public void addShow(Movie movie, LocalDateTime showDate, float ticketCost) {
-        LocalDateTime endNew = showDate.plusMinutes(movie.getRunningTime());
-        for (Show s : sDao.findAll()) {
-            LocalDateTime endS = s.getShowDate().plusMinutes(mDao.findById(s.getMovieId()).getRunningTime());
-            if (showDate.isBefore(endS) && endNew.isAfter(s.getShowDate())) {
-                throw new IllegalStateException("Overlap with the show " + s.getId());
+    /*public List<FullShowDetails> searchShowsInDetail(String partialTitle, String genre,
+                                        LocalDate from, LocalDate to,
+                                        Float minCost, Float maxCost) {
+        List<FullShowDetails> result = new ArrayList<>();
+        List<Show> shows = sRepo.findAll();
+        for (Show s : shows) {
+            Movie movie = mRepo.findById(s.getMovieId());
+            if (partialTitle != null && !partialTitle.isBlank()) {
+                if (!movie.getTitle().toLowerCase().contains(partialTitle.toLowerCase())) {
+                    continue;
+                }
             }
+            if (genre!= null && !genre.isBlank()) {
+                if (!movie.getGenre().equalsIgnoreCase(genre)) {
+                    continue;
+                }
+            }
+            LocalDateTime date = s.getShowDate();
+            if (from != null && (date.getYear() < from.getYear() || date.getDayOfYear() < from.getDayOfYear())) {
+                continue;
+            }
+            if (to != null && (date.getYear() > to.getYear() || date.getDayOfYear() > to.getDayOfYear())) {
+                continue;
+            }
+            if (minCost != null && s.getTicketCost() < minCost) {
+                continue;
+            }
+            if (maxCost != null && s.getTicketCost() > maxCost) {
+                continue;
+            }
+            result.add(new FullShowDetails(s, movie, 200 - TicketsHandler.countTicketsByShow(rRepo, s.getId())));
         }
-        Long id = sDao.generateNextId();
-        Show newS = new Show(id, movie.getId(), showDate, ticketCost);
-        sDao.insert(newS);
+        return result;
+    }*/
+
+    public FullShowDetails visualizeShow(Long showId) {
+        Show s = sRepo.findById(showId);
+        if (s == null)
+            return null;
+        Movie m = mRepo.findById(s.getMovieId());
+        int takenSeats = TicketsHandler.countTicketsByShow(rRepo, showId);
+        int freeSeats = 200 - takenSeats;
+        return new FullShowDetails(s, m, freeSeats);
     }
 
-    public boolean anyReservationForTheShow(Long showId){
-        return !rDao.findAll().stream().filter(p -> p.getShowId() == showId).toList().isEmpty();
+    public Long addShow(Long movieId, LocalDateTime showDate, Float ticketCost) {
+        Movie m = mRepo.findById(movieId);
+        if (m == null)
+            throw new PromptException("(!) Film inesistente.");
+        LocalDateTime endNew = showDate.plusMinutes(m.getRunningTime());
+        List<Show> shows = sRepo.findAll();
+        for (Show s : shows) {
+            LocalDateTime endS = s.getShowDate().plusMinutes(mRepo.findById(s.getMovieId()).getRunningTime());
+            if ((showDate.isAfter(s.getShowDate()) && showDate.isBefore(endS)) ||
+                (endNew.isAfter(s.getShowDate()) && endNew.isBefore(endS)) ||
+                (showDate.isBefore(s.getShowDate()) && endNew.isAfter(endS)))
+                throw new PromptException("(!) La proiezione si sovrappone con la proiezione " + s.getId() + ".");
+        }
+        Long id = sRepo.getMaxId();
+        id = (id != null) ? id + 1 : 0;
+        Show newS = new Show(id, movieId, showDate, ticketCost);
+        sRepo.insert(newS);
+        return id;
     }
 
-    public void editShow(Long showId, LocalDateTime newShowDate, float newTicketCost) {
-        Show s = sDao.findById(showId);
+    private boolean anyReservationForTheShow(Long showId) {
+        List<Reservation> reservations = rRepo.findAll();
+        if (reservations.isEmpty())
+            return false;
+        return !reservations.stream().filter(p -> p.getShowId().equals(showId)).toList().isEmpty();
+    }
+
+    public void editShow(Long showId, LocalDateTime newShowDate, Float newTicketCost) {
+        Show s = sRepo.findById(showId);
         if (s == null) {
-            throw new IllegalArgumentException("Inexistent show");
+            throw new PromptException("(!) Proiezione inesistente.");
         }
         if (anyReservationForTheShow(showId)) {
-            throw new IllegalStateException("Not allowed to edit: reservations for this show exist.");
+            throw new PromptException("(!) Modifica non permessa: esistono gia' prenotazioni per la proiezione corrente.");
         }
-        if (newShowDate != null) s.setShowDate(newShowDate);
-        if (newTicketCost != null) s.setTicketCost(newTicketCost);
-        sDao.insert(s);
+        if (newShowDate != null)
+            s.setShowDate(newShowDate);
+        if (newTicketCost != null)
+            s.setTicketCost(newTicketCost);
+        sRepo.update(s);
     }
 
-    public void deleteShow(long showId) {
-        Show s = sDao.findById(showId);
+    public void deleteShow(Long showId) {
+        Show s = sRepo.findById(showId);
         if (s == null) {
-            throw new IllegalArgumentException("Inexistent show.");
+            throw new PromptException("(!) Proiezione inesistente.");
         }
         if (anyReservationForTheShow(showId)) {
-            throw new IllegalStateException("Not allowed to delete: reservations for this show exist.");
+            throw new PromptException("(!) Eliminazione non permessa: esistono gia' prenotazioni per la proiezione corrente.");
         }
-        sDao.delete(showId);
+        sRepo.delete(showId);
     }
 }

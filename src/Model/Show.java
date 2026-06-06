@@ -4,10 +4,10 @@ import java.time.LocalDateTime;
 
 public class Show implements ItemInitializer<Show>, Identifiable<Long> {
 
-    private Long showId;
-    private Long movieId;
+    private long showId;
+    private long movieId;
     private LocalDateTime showDate;
-    private Float ticketCost;
+    private float ticketCost;
 
     public Show() { }
 
@@ -42,16 +42,16 @@ public class Show implements ItemInitializer<Show>, Identifiable<Long> {
 
     public LocalDateTime getShowDate() { return showDate; }
 
-    public float getTicketCost() { return ticketCost; }
+    public Float getTicketCost() { return ticketCost; }
 
 
-    public void setShowId(Long showId) { this.showId = showId; }
+    public void setShowId(long showId) { this.showId = showId; }
 
-    public void setMovieId(Long movieId) { this.movieId = movieId; }
+    public void setMovieId(long movieId) { this.movieId = movieId; }
 
     public void setShowDate(LocalDateTime showDate) { this.showDate = showDate; }
 
-    public void setTicketCost(Float ticketCost) { this.ticketCost = ticketCost; }
+    public void setTicketCost(float ticketCost) { this.ticketCost = ticketCost; }
 
     public String toString() {
         String result = "";

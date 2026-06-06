@@ -1,31 +1,24 @@
 package Model;
 
-import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 public class ShowDetails {
+    private static final DateTimeFormatter DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
+
     private String showId;
     private String title;
-    private String genre;
-    private String director;
-    private String year;
-    private String runningTime;
     private String showDate;
     private String ticketCost;
 
-    public ShowDetails(Movie movie, Show show) {
+    public ShowDetails(Show show, Movie movie) {
         this.showId = String.valueOf(show.getId());
         this.title = movie.getTitle();
-        this.genre = movie.getGenre();
-        this.director = movie.getDirector();
-        this.year = String.valueOf(movie.getYear());
-        this.runningTime = String.valueOf(movie.getRunningTime());
-        this.showDate = String.valueOf(show.getShowDate());
+        this.showDate = show.getShowDate().format(DATE_TIME_FORMAT);
         this.ticketCost = String.valueOf(show.getTicketCost());
     }
 
     public String toString() {
-        return "RIEPILOGO PROIEZIONE: " + showId + "|" + title + "|"
-                + genre + "|" + director + "|" + year + "|" + runningTime
-                + "|" + showDate + "|" + ticketCost + "|";
+        return "RIEPILOGO PROIEZIONE:" + "\n\t- id: " + showId + "\n\t- titolo: " + title
+                + "\n\t- data e orario: " + showDate + "\n\t- costo del biglietto: " + ticketCost;
     }
 }

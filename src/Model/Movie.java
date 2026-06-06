@@ -11,15 +11,15 @@ public class Movie implements ItemInitializer<Movie>, Identifiable<Long> {
 
     public Movie() {}
 
-    public Movie(String movieId, String title, String director, String year,
-                 String genre, String runningTime, String minAge) {
-        this.movieId = Long.parseLong(movieId);
+    public Movie(Long movieId, String title, String director, Short year,
+                 String genre, Short runningTime, Byte minAge) {
+        this.movieId = movieId;
         this.title = title;
         this.director = director;
-        this.year = Short.parseShort(year);
+        this.year = year;
         this.genre = genre;
-        this.runningTime = Short.parseShort(runningTime);
-        this.minAge = Byte.parseByte(minAge);
+        this.runningTime = runningTime;
+        this.minAge = minAge;
     }
 
     public Movie(String[] array) {
@@ -53,7 +53,7 @@ public class Movie implements ItemInitializer<Movie>, Identifiable<Long> {
         return director;
     }
 
-    public short getYear() {
+    public Short getYear() {
         return year;
     }
 
@@ -61,11 +61,11 @@ public class Movie implements ItemInitializer<Movie>, Identifiable<Long> {
         return genre;
     }
 
-    public short getRunningTime() {
+    public Short getRunningTime() {
         return runningTime;
     }
 
-    public byte getMinAge() {
+    public Byte getMinAge() {
         return minAge;
     }
 
