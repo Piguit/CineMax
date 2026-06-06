@@ -1,6 +1,5 @@
 package Repository;
 
-import java.io.IOException;
 import java.util.List;
 
 import Model.User;
@@ -10,14 +9,8 @@ public class UserRepository implements FileRepository<User, String> {
     private GenericRepository<String, User> r;
 
     public UserRepository() {
-        try {
-            this.r = new GenericRepository<>(new User(), FILE_NAME);
-        } catch (IOException e) {
-            //Non sarà la gestione definitiva ovviamente
-            System.err.println("Impossibile creare collegamento con la base di dati.");
-            System.exit(0);
-        }
-    };
+        this.r = new GenericRepository<>(new User(), FILE_NAME);
+    }
 
     public List<User> findAll() {
         return r.findAll();

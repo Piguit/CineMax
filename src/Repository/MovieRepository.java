@@ -1,6 +1,5 @@
 package Repository;
 
-import java.io.IOException;
 import java.util.List;
 
 import Model.Movie;
@@ -10,13 +9,7 @@ public class MovieRepository implements FileRepository<Movie, Long> {
     private GenericRepository<Long, Movie> r;
 
     public MovieRepository() {
-        try {
-            this.r = new GenericRepository<>(new Movie(), FILE_NAME);
-        } catch (IOException e) {
-            //Non sarà la gestione definitiva ovviamente
-            System.err.println("Impossibile creare collegamento con la base di dati.");
-            System.exit(0);
-        }
+        this.r = new GenericRepository<>(new Movie(), FILE_NAME);
     }
 
     public List<Movie> findAll() {

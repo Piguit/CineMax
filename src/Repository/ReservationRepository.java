@@ -2,21 +2,14 @@ package Repository;
 
 import Model.Reservation;
 
-import java.io.IOException;
 import java.util.List;
 
 public class ReservationRepository implements FileRepository<Reservation, Long> {
-    public static final String FILE_NAME = "Reservation_repository.txt";
+    public static final String FILE_NAME = "reservation_repository.txt";
     private GenericRepository<Long, Reservation> r;
 
     public ReservationRepository() {
-        try {
-            this.r = new GenericRepository<>(new Reservation(), FILE_NAME);
-        } catch (IOException e) {
-            //Non sarà la gestione definitiva ovviamente
-            System.err.println("Impossibile creare collegamento con la base di dati.");
-            System.exit(0);
-        }
+        this.r = new GenericRepository<>(new Reservation(), FILE_NAME);
     }
 
     public List<Reservation> findAll() {

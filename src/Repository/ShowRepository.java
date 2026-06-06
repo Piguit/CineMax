@@ -1,6 +1,5 @@
 package Repository;
 
-import java.io.IOException;
 import java.util.List;
 
 import Model.Show;
@@ -10,13 +9,7 @@ public class ShowRepository implements FileRepository<Show, Long> {
     private GenericRepository<Long, Show> r;
 
     public ShowRepository() {
-        try {
-            this.r = new GenericRepository<>(new Show(), FILE_NAME);
-        } catch (IOException e) {
-            //Non sarà la gestione definitiva ovviamente
-            System.err.println("Impossibile creare collegamento con la base di dati.");
-            System.exit(0);
-        }
+        this.r = new GenericRepository<>(new Show(), FILE_NAME);
     }
 
     public List<Show> findAll() {

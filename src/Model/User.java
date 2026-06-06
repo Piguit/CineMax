@@ -37,8 +37,11 @@ public class User implements ItemInitializer<User>, Identifiable<String> {
             case "PROJECTIONIST":
                 this.role = Role.PROJECTIONIST;
                 break;
-            default:
+            case "BOXOFFICECLERK":
                 this.role = Role.BOXOFFICECLERK;
+                break;
+            default:
+                this.role = Role.ADMIN;
                 break;
         }
     }
