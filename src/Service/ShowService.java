@@ -8,101 +8,75 @@ import Model.Reservation;
 import Model.Show;
 import Model.FullShowDetails;
 import Model.ShowDetails;
-import Utility.TicketsHandler;
+import Utility.OutputPrinter;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 public class ShowService {
     private final ShowRepository sRepo;
     private final ReservationRepository rRepo;
     private final MovieRepository mRepo;
+    private final OutputPrinter op;
 
-    public ShowService(ShowRepository sRepo,
-                ReservationRepository rRepo, MovieRepository mRepo) {
+    public ShowService(ShowRepository sRepo, ReservationRepository rRepo, MovieRepository mRepo, OutputPrinter op) {
         this.sRepo = sRepo;
         this.rRepo = rRepo;
         this.mRepo = mRepo;
+        this.op = op;
     }
 
-    public List<ShowDetails> searchShows(String partialTitle, String genre,
+    public int searchAndPrintShows(String partialTitle, String genre,
                                  LocalDate from, LocalDate to,
                                  Float minCost, Float maxCost) {
-        List<ShowDetails> result = new ArrayList<>();
-        List<Show> shows = sRepo.findAll();
-        for (Show s : shows) {
-            Movie movie = mRepo.findById(s.getMovieId());
-            if (partialTitle != null && !partialTitle.isBlank()) {
-                if (!movie.getTitle().toLowerCase().contains(partialTitle.toLowerCase())) {
-                    continue;
+        boolean titleExists = false;
+        if (titleExists = (partialTitle != null && !partialTitle.isBlank()))
+            partialTitle = partialTitle.toLowerCase();
+        boolean genreExists = false;
+        if (genreExists = (genre != null && !genre.isBlank()))
+            genre = genre.toLowerCase();
+        int printedItems = 0;
+        sRepo.startSequentialReading();
+        try {
+            List<Show> shows;
+            while ((shows = sRepo.getNextItems()) != null)
+                for (Show s : shows) {
+                    Movie movie = mRepo.findById(s.getMovieId());
+                    if (titleExists && !movie.getTitle().toLowerCase().contains(partialTitle)) {
+                        continue;
+                    }
+                    if (genreExists && !movie.getGenre().toLowerCase().equals(genre)) {
+                        continue;
+                    }
+                    LocalDateTime date = s.getShowDate();
+                    if (from != null && (date.getYear() < from.getYear() || date.getDayOfYear() < from.getDayOfYear())) {
+                        continue;
+                    }
+                    if (to != null && (date.getYear() > to.getYear() || date.getDayOfYear() > to.getDayOfYear())) {
+                        continue;
+                    }
+                    if (minCost != null && s.getTicketCost() < minCost) {
+                        continue;
+                    }
+                    if (maxCost != null && s.getTicketCost() > maxCost) {
+                        continue;
+                    }
+                    op.printlnMarked(new ShowDetails(s, movie).toString());
+                    printedItems++;
                 }
-            }
-            if (genre != null && !genre.isBlank()) {
-                if (!movie.getGenre().equalsIgnoreCase(genre)) {
-                    continue;
-                }
-            }
-            LocalDateTime date = s.getShowDate();
-            if (from != null && (date.getYear() < from.getYear() || date.getDayOfYear() < from.getDayOfYear())) {
-                continue;
-            }
-            if (to != null && (date.getYear() > to.getYear() || date.getDayOfYear() > to.getDayOfYear())) {
-                continue;
-            }
-            if (minCost != null && s.getTicketCost() < minCost) {
-                continue;
-            }
-            if (maxCost != null && s.getTicketCost() > maxCost) {
-                continue;
-            }
-            result.add(new ShowDetails(s, movie));
+        } finally {
+            sRepo.endSequentialReading();
         }
-        return result;
+        return printedItems;
     }
-
-    /*public List<FullShowDetails> searchShowsInDetail(String partialTitle, String genre,
-                                        LocalDate from, LocalDate to,
-                                        Float minCost, Float maxCost) {
-        List<FullShowDetails> result = new ArrayList<>();
-        List<Show> shows = sRepo.findAll();
-        for (Show s : shows) {
-            Movie movie = mRepo.findById(s.getMovieId());
-            if (partialTitle != null && !partialTitle.isBlank()) {
-                if (!movie.getTitle().toLowerCase().contains(partialTitle.toLowerCase())) {
-                    continue;
-                }
-            }
-            if (genre!= null && !genre.isBlank()) {
-                if (!movie.getGenre().equalsIgnoreCase(genre)) {
-                    continue;
-                }
-            }
-            LocalDateTime date = s.getShowDate();
-            if (from != null && (date.getYear() < from.getYear() || date.getDayOfYear() < from.getDayOfYear())) {
-                continue;
-            }
-            if (to != null && (date.getYear() > to.getYear() || date.getDayOfYear() > to.getDayOfYear())) {
-                continue;
-            }
-            if (minCost != null && s.getTicketCost() < minCost) {
-                continue;
-            }
-            if (maxCost != null && s.getTicketCost() > maxCost) {
-                continue;
-            }
-            result.add(new FullShowDetails(s, movie, 200 - TicketsHandler.countTicketsByShow(rRepo, s.getId())));
-        }
-        return result;
-    }*/
 
     public FullShowDetails visualizeShow(Long showId) {
         Show s = sRepo.findById(showId);
         if (s == null)
             return null;
         Movie m = mRepo.findById(s.getMovieId());
-        int takenSeats = TicketsHandler.countTicketsByShow(rRepo, showId);
+        int takenSeats = ReservationService.countTicketsByShow(rRepo, showId);
         int freeSeats = 200 - takenSeats;
         return new FullShowDetails(s, m, freeSeats);
     }
@@ -112,14 +86,22 @@ public class ShowService {
         if (m == null)
             throw new PromptException("(!) Film inesistente.");
         LocalDateTime endNew = showDate.plusMinutes(m.getRunningTime());
-        List<Show> shows = sRepo.findAll();
-        for (Show s : shows) {
-            LocalDateTime endS = s.getShowDate().plusMinutes(mRepo.findById(s.getMovieId()).getRunningTime());
-            if ((showDate.isAfter(s.getShowDate()) && showDate.isBefore(endS)) ||
-                (endNew.isAfter(s.getShowDate()) && endNew.isBefore(endS)) ||
-                (showDate.isBefore(s.getShowDate()) && endNew.isAfter(endS)))
-                throw new PromptException("(!) La proiezione si sovrappone con la proiezione " + s.getId() + ".");
+        
+        sRepo.startSequentialReading();
+        try {
+            List<Show> shows;
+            while ((shows = sRepo.getNextItems()) != null)
+                for (Show s : shows) {
+                    LocalDateTime endS = s.getShowDate().plusMinutes(mRepo.findById(s.getMovieId()).getRunningTime());
+                    if ((showDate.isAfter(s.getShowDate()) && showDate.isBefore(endS)) ||
+                        (endNew.isAfter(s.getShowDate()) && endNew.isBefore(endS)) ||
+                        (showDate.isBefore(s.getShowDate()) && endNew.isAfter(endS)))
+                        throw new PromptException("(!) La proiezione si sovrappone con la proiezione " + s.getId() + ".");
+                }
+        } finally {
+            sRepo.endSequentialReading();
         }
+        
         Long id = sRepo.getMaxId();
         id = (id != null) ? id + 1 : 0;
         Show newS = new Show(id, movieId, showDate, ticketCost);
@@ -128,10 +110,16 @@ public class ShowService {
     }
 
     private boolean anyReservationForTheShow(Long showId) {
-        List<Reservation> reservations = rRepo.findAll();
-        if (reservations.isEmpty())
-            return false;
-        return !reservations.stream().filter(p -> p.getShowId().equals(showId)).toList().isEmpty();
+        rRepo.startSequentialReading();
+        try {
+            List<Reservation> reservations;
+            while ((reservations = rRepo.getNextItems()) != null)
+                if (!reservations.stream().filter(p -> p.getShowId().equals(showId)).toList().isEmpty())
+                    return true;
+        } finally {
+            rRepo.endSequentialReading();
+        }
+        return false;
     }
 
     public void editShow(Long showId, LocalDateTime newShowDate, Float newTicketCost) {

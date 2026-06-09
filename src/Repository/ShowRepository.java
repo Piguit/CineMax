@@ -12,9 +12,9 @@ public class ShowRepository implements FileRepository<Show, Long> {
         this.r = new GenericRepository<>(new Show(), FILE_NAME);
     }
 
-    public List<Show> findAll() {
+    /*public List<Show> findAll() {
         return r.findAll();
-    }
+    }*/
 
     public Show findById(Long id) {
         return r.findById(id);
@@ -34,5 +34,19 @@ public class ShowRepository implements FileRepository<Show, Long> {
 
     public Long getMaxId() {
         return r.getMaxId();
+    }
+
+
+
+    public List<Show> getNextItems() {
+        return r.getNextItems();
+    }
+
+    public void startSequentialReading() {
+        r.startSequentialReading();
+    }
+
+    public void endSequentialReading() {
+        r.endSequentialReading();
     }
 }

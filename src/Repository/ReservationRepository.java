@@ -12,9 +12,9 @@ public class ReservationRepository implements FileRepository<Reservation, Long> 
         this.r = new GenericRepository<>(new Reservation(), FILE_NAME);
     }
 
-    public List<Reservation> findAll() {
+    /*public List<Reservation> findAll() {
         return r.findAll();
-    }
+    }*/
 
     public Reservation findById(Long id) {
         return r.findById(id);
@@ -34,5 +34,19 @@ public class ReservationRepository implements FileRepository<Reservation, Long> 
     
     public Long getMaxId() {
         return r.getMaxId();
+    }
+
+
+
+    public List<Reservation> getNextItems() {
+        return r.getNextItems();
+    }
+
+    public void startSequentialReading() {
+        r.startSequentialReading();
+    }
+
+    public void endSequentialReading() {
+        r.endSequentialReading();
     }
 }

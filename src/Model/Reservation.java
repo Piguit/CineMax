@@ -15,7 +15,7 @@ public class Reservation implements ItemInitializer<Reservation>, Identifiable<L
     private long reservationId;
     private String username;
     private long showId;
-    private byte ticketsNumber;
+    private short ticketsNumber;
 
     public Reservation() {}
 
@@ -26,7 +26,7 @@ public class Reservation implements ItemInitializer<Reservation>, Identifiable<L
      * @param showId id di proiezione
      * @param ticketsNumber numero di biglietti
      */
-    public Reservation(Long reservationId, String username, Long showId, Byte ticketsNumber) {
+    public Reservation(Long reservationId, String username, Long showId, Short ticketsNumber) {
         this.reservationId = reservationId;
         this.username = username;
         this.showId = showId;
@@ -45,7 +45,7 @@ public class Reservation implements ItemInitializer<Reservation>, Identifiable<L
         this.reservationId = Long.parseLong(array[0]);
         this.username = array[1];
         this.showId = Long.parseLong(array[2]);
-        this.ticketsNumber = Byte.parseByte(array[3]);
+        this.ticketsNumber = Short.parseShort(array[3]);
     }
     /**
      * Istanzia e restituisce un nuovo oggetto {@code Reservation}
@@ -85,7 +85,7 @@ public class Reservation implements ItemInitializer<Reservation>, Identifiable<L
      * Restituisce il numero di biglietti
      * @return numero di biglietti
      */
-    public Byte getTicketsNumber(){return ticketsNumber; }
+    public Short getTicketsNumber(){return ticketsNumber; }
 
     /** @param reservationId id di prenotazione da assegnare */
     public void setReservationId(long reservationId){this.reservationId = reservationId; }
@@ -94,7 +94,7 @@ public class Reservation implements ItemInitializer<Reservation>, Identifiable<L
     /** @param showId id di proiezione della prenotazione da assegnare*/
     public void setShowId(long showId){this.showId = showId; }
     /** @param ticketsNumber numero di biglietti da assegnare */
-    public void setTicketsNumber(byte ticketsNumber){this.ticketsNumber = ticketsNumber; }
+    public void setTicketsNumber(short ticketsNumber){this.ticketsNumber = ticketsNumber; }
     /**
      * Restituisce una descrizione testuale delle informazioni della prenotazione
      * con la concatenazione di tutti i campi divisi dal separatore '|'.

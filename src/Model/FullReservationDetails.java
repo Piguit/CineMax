@@ -8,7 +8,7 @@ import java.time.format.DateTimeFormatter;
  * </p>
  */
 public class FullReservationDetails {
-    private static final DateTimeFormatter DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
+    private static final DateTimeFormatter DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
     
     private String reservationId;
     private String name;
@@ -42,9 +42,9 @@ public class FullReservationDetails {
      * (id prenotazione, nome, cognome, data e orario, numero di biglietti, costo del biglietto, costo totale, titolo film)
      */
     public String toString() {
-        return "RIEPILOGO PRENOTAZIONE:" + "\n\t- id: " + reservationId + "\n\t- nome: " + name
-                + "\n\t- cognome: " + surname + "\n\t- data e orario: " + showDate + "\n\t- numero di biglietti: " + ticketsNumber
-                + "\n\t- costo del biglietto: " + ticketCost + "\n\t- costo totale: " + totalCost + "\n\t- film: " + title;
+        return "RIEPILOGO PRENOTAZIONE:" + "\n- id: " + reservationId + "\n- nome: " + name
+                + "\n- cognome: " + surname + "\n- data e orario: " + showDate + "\n- numero di biglietti: " + ticketsNumber
+                + "\n- costo del biglietto: " + ticketCost + "\n- costo totale: " + totalCost + "\n- film: " + title;
     }
 }
 

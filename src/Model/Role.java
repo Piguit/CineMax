@@ -23,7 +23,7 @@ public enum Role {
      */
     BOXOFFICECLERK,
     /**
-     * Rappresenta l'amministratore del sistema. Ha l'accesso a tutte le funzionalità.
+     * Rappresenta l'amministratore del sistema. Può promuovere a PROJECTIONIST o BOXOFFICECLERK gli utenti CLIENT.
      */
     ADMIN;
 }

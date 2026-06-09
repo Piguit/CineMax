@@ -23,6 +23,12 @@ public class GenericRepository<E extends Comparable<E>, F extends ItemInitialize
     private final Path path;
     private final Path tempPath;
 
+    private long currentFilePosition;
+    private ByteBuffer incompleteTuple;
+    private FileChannel fileChannel;
+
+    private E maxId;
+
     private static class Couple<S, D> {
         private S sx;
         private D dx;
@@ -73,6 +79,49 @@ public class GenericRepository<E extends Comparable<E>, F extends ItemInitialize
         return new Couple<>(tuples, truncated);
     }
 
+    public void startSequentialReading() {
+        currentFilePosition = 0;
+        incompleteTuple = ByteBuffer.allocate(0);
+        try {
+            fileChannel = FileChannel.open(path, StandardOpenOption.READ);
+        } catch (IOException e) {
+            throw new FileException("<!> Non e' stato possibile aprire in lettura il file " + path + ". Controllare i privilegi della cartella.");
+        }
+    }
+
+    public void endSequentialReading() {
+        try {
+            fileChannel.close();
+        } catch (IOException e) {
+            throw new FileException("<!> Non e' stato possibile chiudere il file " + path + ". Controllare i privilegi della cartella.");
+        }
+    }
+
+    public List<F> getNextItems() {
+        try {
+            while (currentFilePosition < fileChannel.size()) {
+                fileChannel.position(currentFilePosition);
+                ByteBuffer buffer = ByteBuffer.allocate(incompleteTuple.capacity() + PAGE_DIMENSION);
+                buffer.put(incompleteTuple);
+                fileChannel.read(buffer);
+                currentFilePosition = fileChannel.position();
+                
+                Couple<List<String>, ByteBuffer> result = getTuples(buffer.slice(0, buffer.position()));
+                List<String> tuples = result.getSx();
+                incompleteTuple = result.getDx();
+                if (tuples.isEmpty()) continue;
+
+                List<F> list = new ArrayList<>();
+                for (String tuple : tuples)
+                    list.add(model.getNewItem(tuple.split(String.valueOf(DIVIDER))));
+                return list;
+            }
+            return null;
+        } catch (IOException e) {
+            throw new FileException("<!> Non e' stato possibile leggere dal file " + path + ". Controllare i privilegi della cartella.");
+        }
+    }
+
     public List<F> findAll() {
         List<F> list = new ArrayList<>();
         try (FileChannel channel = FileChannel.open(path, StandardOpenOption.READ)) {
@@ -97,16 +146,32 @@ public class GenericRepository<E extends Comparable<E>, F extends ItemInitialize
     }
 
     public F findById(E id) {
-        List<F> list = findAll();
-        if (list.isEmpty())
-            return null;
-        List<F> oneItemList = list.stream().filter(m -> m.getId().equals(id)).toList();
-        return !oneItemList.isEmpty() ? oneItemList.getFirst() : null;
+        startSequentialReading();
+        List<F> list = new ArrayList<>();
+        try {
+            while ((list = getNextItems()) != null) {
+                List<F> oneItemList = list.stream().filter(m -> m.getId().equals(id)).toList();
+                if (!oneItemList.isEmpty())
+                    return oneItemList.getFirst();
+            }
+        } finally {
+            endSequentialReading();
+        }
+        return null;
     }
 
     public boolean save(F item) {
-        if (findById(item.getId()) != null)
-            return false;
+        E newId = item.getId();
+        getMaxId();
+        if (maxId != null) {
+            if (newId.compareTo(maxId) == 0)
+                return false;
+            else if (newId.compareTo(maxId) < 0) {
+                if (findById(newId) != null)
+                    return false;
+            } else
+                maxId = newId;
+        }
         String persistent = "";
         String[] itemFields = item.getFields();
         for (String field : itemFields)
@@ -141,7 +206,9 @@ public class GenericRepository<E extends Comparable<E>, F extends ItemInitialize
     }
 
     public boolean update(F item) {
-        if (findById(item.getId()) == null)
+        E id = item.getId();
+        getMaxId();
+        if (maxId == null || id.compareTo(maxId) > 0 || findById(id) == null)
             return false;
 
         prepareTempFile();
@@ -154,7 +221,7 @@ public class GenericRepository<E extends Comparable<E>, F extends ItemInitialize
                 updatedItem += DIVIDER + field;
             }
             updatedItem = updatedItem.substring(1);
-            modify(item.getId(), updatedItem, iChannel, oChannel);
+            modify(id, updatedItem, iChannel, oChannel);
         } catch (IOException e) {
             throw new FileException("<!> Non e' stato possibile produrre la versione aggiornata del file " + path + ". Controllare i privilegi della cartella.");
         }
@@ -165,7 +232,8 @@ public class GenericRepository<E extends Comparable<E>, F extends ItemInitialize
     }
 
     public boolean delete(E id) {
-        if (findById(id) == null)
+        getMaxId();
+        if (maxId == null || id.compareTo(maxId) > 0 || findById(id) == null)
             return false;
 
         prepareTempFile();
@@ -178,6 +246,9 @@ public class GenericRepository<E extends Comparable<E>, F extends ItemInitialize
         }
         
         overrideFile();
+
+        if (id == maxId)
+            maxId = null;
 
         return true;
     }
@@ -256,10 +327,25 @@ public class GenericRepository<E extends Comparable<E>, F extends ItemInitialize
     }
 
     public E getMaxId() {
-        List<F> list = findAll();
-        if (!list.isEmpty())
-            return list.stream().max((a, b) -> a.getId().compareTo(b.getId())).get().getId();
-        else
-            return null;
+        if (maxId != null)
+            return maxId;
+
+        startSequentialReading();
+        List<F> list = new ArrayList<>();
+        E max = null;
+        try {
+            list = getNextItems();
+            if (list != null)
+                max = list.getFirst().getId();
+            while (list != null) {
+                E tmp = list.stream().max((a, b) -> a.getId().compareTo(b.getId())).get().getId();
+                max = (max.compareTo(tmp) > 0) ? max : tmp;
+                list = getNextItems();
+            }
+        } finally {
+            endSequentialReading();
+        }
+        maxId = max;
+        return max;
     }
 }

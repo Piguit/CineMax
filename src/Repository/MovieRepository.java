@@ -12,9 +12,9 @@ public class MovieRepository implements FileRepository<Movie, Long> {
         this.r = new GenericRepository<>(new Movie(), FILE_NAME);
     }
 
-    public List<Movie> findAll() {
+    /*public List<Movie> findAll() {
         return r.findAll();
-    }
+    }*/
 
     public Movie findById(Long id) {
         return r.findById(id);
@@ -34,5 +34,19 @@ public class MovieRepository implements FileRepository<Movie, Long> {
 
     public Long getMaxId() {
         return r.getMaxId();
+    }
+
+    
+
+    public List<Movie> getNextItems() {
+        return r.getNextItems();
+    }
+
+    public void startSequentialReading() {
+        r.startSequentialReading();
+    }
+
+    public void endSequentialReading() {
+        r.endSequentialReading();
     }
 }

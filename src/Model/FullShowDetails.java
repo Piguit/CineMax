@@ -8,7 +8,7 @@ import java.time.format.DateTimeFormatter;
  * </p>
  */
 public class FullShowDetails {
-    private static final DateTimeFormatter DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
+    private static final DateTimeFormatter DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
     private String showId;
     private String title;
@@ -46,8 +46,8 @@ public class FullShowDetails {
      * costo biglietto, posti disponibili)
      */
     public String toString() {
-        return "RIEPILOGO PROIEZIONE:" + "\n\t- id: " + showId + "\n\t- titolo: " + title + "\n\t- genere: " + genre + "\n\t- regista: "
-                + director + "\n\t- anno: " + year + "\n\t- durata: " + runningTime + "\n\t- eta' minima: " + minAge + "\n\t- data e orario: "
-                + showDate + "\n\t- costo del biglietto: " + ticketCost + "\n\t- posti disponibili: " + freeSeats;
+        return "RIEPILOGO PROIEZIONE:" + "\n- id: " + showId + "\n- titolo: " + title + "\n- genere: " + genre + "\n- regista: "
+                + director + "\n- anno: " + year + "\n- durata: " + runningTime + "\n- eta' minima: " + minAge + "\n- data e orario: "
+                + showDate + "\n- costo del biglietto: " + ticketCost + "\n- posti disponibili: " + freeSeats;
     }
 }

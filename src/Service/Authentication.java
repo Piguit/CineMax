@@ -18,7 +18,15 @@ public class Authentication {
     }
 
     public boolean isFirstAccess() {
-        return uRepo.findAll().isEmpty();
+        uRepo.startSequentialReading();
+        boolean result = true;
+        try {
+            if (uRepo.getNextItems() != null)
+                result = false;
+        } finally {
+            uRepo.endSequentialReading();
+        }
+        return result;
     }
 
     public User signIn(String username, String password) {

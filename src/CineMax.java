@@ -9,25 +9,33 @@ import Service.ShowService;
 import TUInterface.TextUserInterface;
 import Utility.SafetyException;
 import Repository.FileException;
+import Utility.OutputPrinter;
 
 public class CineMax {
-    public static void main(String[] args){
+    public static final String MARGIN = "        ";
+    public static final String MARGIN_END = "      * ";
+    public static final int ROW_LENGTH = 76;
+
+    public static void main(String[] args) {
+        OutputPrinter op = new OutputPrinter(MARGIN, MARGIN_END, ROW_LENGTH);
         try {
             UserRepository uRepo = new UserRepository();
             MovieRepository mRepo = new MovieRepository();
             ShowRepository sRepo = new ShowRepository();
             ReservationRepository rRepo = new ReservationRepository();
+
             Authentication authService = new Authentication(uRepo);
-            MovieService mService = new MovieService(mRepo);
-            ShowService sService = new ShowService(sRepo, rRepo, mRepo);
-            ReservationService rService = new ReservationService(rRepo, sRepo, uRepo, mRepo);
-            TextUserInterface tui = new TextUserInterface(authService, mService, sService, rService);
+            MovieService mService = new MovieService(mRepo, op);
+            ShowService sService = new ShowService(sRepo, rRepo, mRepo, op);
+            ReservationService rService = new ReservationService(rRepo, sRepo, uRepo, mRepo, op);
+            
+            TextUserInterface tui = new TextUserInterface(authService, mService, sService, rService, op);
             tui.getAdminPanel();
             tui.start();
         } catch (FileException e) {
-            System.out.println(e.getMessage());
+            op.println(e.getMessage());
         } catch (SafetyException e) {
-            System.out.println(e.getMessage());
+            op.println(e.getMessage());
         }
     }    
 }
