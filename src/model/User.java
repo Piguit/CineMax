@@ -63,8 +63,8 @@ public class User implements ItemInitializer<User>, Identifiable<String> {
         this.birthDate = LocalDate.parse(array[4]);
         this.residence = array[5];
         switch (array[6]) {
-            case "CLIENT":
-                this.role = Role.CLIENT;
+            case "ADMIN":
+                this.role = Role.ADMIN;
                 break;
             case "PROJECTIONIST":
                 this.role = Role.PROJECTIONIST;
@@ -73,7 +73,7 @@ public class User implements ItemInitializer<User>, Identifiable<String> {
                 this.role = Role.BOXOFFICECLERK;
                 break;
             default:
-                this.role = Role.ADMIN;
+                this.role = Role.CLIENT;
                 break;
         }
     }

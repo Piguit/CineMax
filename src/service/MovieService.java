@@ -2,6 +2,8 @@ package service;
 
 import model.Movie;
 import repository.MovieRepository;
+
+import java.util.ArrayList;
 import java.util.List;
 import utility.OutputPrinter;
 
@@ -26,14 +28,16 @@ public class MovieService {
         try {
             List<Movie> movies;
             while ((movies = mRepo.getNextItems()) != null) {
+                List<String> strings = new ArrayList<>();
                 for (Movie m : movies) {
                     if ((titleExists && !m.getTitle().toLowerCase().contains(partialTitle)) ||
                         (directorExists && !m.getDirector().toLowerCase().equals(director)) ||
                         (year != null && !m.getYear().equals(year)))
                         continue;
-                    op.printlnMarked(m.toString());
-                    printedItems++;
+                    strings.add(m.toString());
                 }
+                printedItems += strings.size();
+                op.printlnMarkedByChunk(strings);
             }
         } finally {
             mRepo.endSequentialReading();

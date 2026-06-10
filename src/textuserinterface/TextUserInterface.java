@@ -30,13 +30,14 @@ public class TextUserInterface {
     }
 
     public void start() {
+        getAdminPanel();
         while (true) {
             if (currentUser == null) {
                 showGuestMenu();
             } else {
                 switch (currentUser.getRole()) {
-                    case Role.CLIENT:
-                        showClientMenu();
+                    case Role.ADMIN:
+                        showAdminMenu();
                         break;
                     case Role.PROJECTIONIST:
                         showProjectionistMenu();
@@ -44,10 +45,8 @@ public class TextUserInterface {
                     case Role.BOXOFFICECLERK:
                         showBoxOfficeClerkMenu();
                         break;
-                    case Role.ADMIN:
-                        showAdminMenu();
-                        break;
                     default:
+                        showClientMenu();
                         break;
                 }
             }
@@ -155,6 +154,7 @@ public class TextUserInterface {
         try {
             currentUser = authService.signIn(username, password);
         } catch (PromptException e) {
+            op.print(SEPARATOR);
             op.println(e.getMessage());
         }
     }
@@ -199,6 +199,7 @@ public class TextUserInterface {
         String username = mh.readString("Username: ", true);
         String password = mh.readString("Password: ", true);
         boolean result = authService.signUp(username, name, surname, password, birthDate, residence);
+        op.print(SEPARATOR);
         if (result)
             op.println("La registrazione è avvenuta con successo.");
         else
@@ -209,8 +210,8 @@ public class TextUserInterface {
 
     private void addReservation() {
         Long showId = mh.readLong("Identificativo della proiezione: ", true);
-        Short ticketsNumber = mh.readShort("Numero di biglietti: ", true);
-
+        Short ticketsNumber = mh.readPositiveShort("Numero di biglietti: ", true);
+        op.print(SEPARATOR);
         try {
             Long reservationId = resService.addReservation(currentUser.getId(), showId, ticketsNumber);
             op.println("Registrazione riuscita: la tua prenotazione ha id " + reservationId + ".");
@@ -231,7 +232,8 @@ public class TextUserInterface {
     private void editReservation() {
         Long reservationId = mh.readLong("Identificativo della prenotazione: ", true);
         Long showId = mh.readLong("Identificativo della nuova proiezione: ", true);
-        Short ticketsNumber = mh.readShort("Numero di biglietti: ", true);
+        Short ticketsNumber = mh.readPositiveShort("Numero di biglietti: ", true);
+        op.print(SEPARATOR);
         try {
             resService.editReservation(currentUser.getId(), reservationId, showId, ticketsNumber);
             op.println("Modifica riuscita.");
@@ -242,6 +244,7 @@ public class TextUserInterface {
 
     private void deleteReservation() {
         Long reservationId = mh.readLong("Identificativo della prenotazione: ", true);
+        op.print(SEPARATOR);
         try {
             resService.deleteReservation(currentUser.getId(), reservationId);
             op.println("Eliminazione riuscita.");
@@ -255,7 +258,7 @@ public class TextUserInterface {
     private void searchMovies() {
         String partialTitle = mh.readString("Titolo: ", false);
         String director = mh.readString("Regista: ", false);
-        Short year = mh.readShort("Anno: ", false);
+        Short year = mh.readPositiveShort("Anno: ", false);
         op.print(SEPARATOR);
         int num = movService.searchAndPrintMovies(partialTitle, director, year);
         if (num > 0) {
@@ -270,14 +273,15 @@ public class TextUserInterface {
         if (id == null) {
             String title = mh.readString("Titolo: ", true);
             String director = mh.readString("Regista: ", true);
-            Short year = mh.readShort("Anno: ", true);
+            Short year = mh.readPositiveShort("Anno: ", true);
             String genre = mh.readString("Genere: ", true);
-            Short runningTime = mh.readShort("Durata: ", true);
-            Byte minAge = mh.readByte("Eta' minima: ", true);
+            Short runningTime = mh.readPositiveShort("Durata: ", true);
+            Byte minAge = mh.readPositiveByte("Eta' minima: ", true);
             id = movService.addMovie(title, director, year, genre, runningTime, minAge);
         }
         LocalDateTime date = mh.readDateAndTime("Data e ora - dd/mm/yyyy hh:mm: ", true);
         Float ticketCost = mh.readFloat("Costo del biglietto: ", true);
+        op.print(SEPARATOR);
         try {
             Long showId = showService.addShow(id, date, ticketCost);
             op.println("Registrazione riuscita: la nuova proiezione ha id " + showId + ".");
@@ -290,6 +294,7 @@ public class TextUserInterface {
         Long showId = mh.readLong("Identificativo della proiezione: ", true);
         LocalDateTime newShowDate = mh.readDateAndTime("Data e ora nuove - dd/mm/yyyy hh:mm: ", true);
         Float newTicketCost = mh.readFloat("Nuovo prezzo del biglietto: ", true);
+        op.print(SEPARATOR);
         try {
             showService.editShow(showId, newShowDate, newTicketCost);
             op.println("Modifica riuscita.");
@@ -300,6 +305,7 @@ public class TextUserInterface {
 
     private void deleteShow() {
         Long showId = mh.readLong("Identificativo della proiezione: ", true);
+        op.print(SEPARATOR);
         try {
             showService.deleteShow(showId);
             op.println("Eliminazione riuscita.");
@@ -310,7 +316,7 @@ public class TextUserInterface {
 
     //---------------- BOXOFFICECLERK
 
-    public void searchReservations() {
+    private void searchReservations() {
         Long id = mh.readLong("Identificativo della prenotazione: ", false);
         String name = mh.readString("Nome: ", false);
         String surname = mh.readString("Cognome: ", false);
@@ -335,7 +341,7 @@ public class TextUserInterface {
             op.println("Nessun risultato trovato.");
     }
 
-    public void visualizeTodayReservations() {
+    private void visualizeTodayReservations() {
         int num = resService.printTodayReservations();
         if (num > 0) {
             op.print(SEPARATOR);
@@ -346,7 +352,7 @@ public class TextUserInterface {
 
     //---------------- ADMIN
 
-    public void getAdminPanel() {
+    private void getAdminPanel() {
         if (authService.isFirstAccess()) {
             op.println(DIVIDER + "Primo accesso. E' necessario creare un account admin.");
             String name = mh.readString("Nome: ", true);
@@ -356,12 +362,14 @@ public class TextUserInterface {
             String username = mh.readString("Username: ", true);
             String password = mh.readString("Password: ", true);
             authService.adminSignUp(username, name, surname, password, birthDate, residence);
+            op.print(SEPARATOR);
             op.println("L'applicazione e' pronta.");
         }
     }
 
     private void makeProjectionist() {
         String username = mh.readString("Username: ", true);
+        op.print(SEPARATOR);
         try {
             authService.makeProjectionist(username);
             op.println("Operazione riuscita.");
@@ -372,6 +380,7 @@ public class TextUserInterface {
 
     private void makeBoxOfficeClerk() {
         String username = mh.readString("Username: ", true);
+        op.print(SEPARATOR);
         try {
             authService.makeBoxOfficeClerk(username);
             op.println("Operazione riuscita.");

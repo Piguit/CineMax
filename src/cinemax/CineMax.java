@@ -32,7 +32,6 @@ public class CineMax {
             ReservationService rService = new ReservationService(rRepo, sRepo, uRepo, mRepo, op);
             
             TextUserInterface tui = new TextUserInterface(authService, mService, sService, rService, op);
-            tui.getAdminPanel();
             tui.start();
         } catch (FileException | SafetyException e) {
             op.println(e.getMessage());

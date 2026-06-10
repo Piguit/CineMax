@@ -9,6 +9,7 @@ import model.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 public class ReservationService {
@@ -47,14 +48,17 @@ public class ReservationService {
         try {
             List<Reservation> reservations;
             while ((reservations = rRepo.getNextItems()) != null) {
-                reservations = reservations.stream().filter(r -> r.getUsername().equals(username)).toList();
-                printedItems += reservations.size();
+                List<String> strings = new ArrayList<>();
                 for (Reservation r : reservations) {
+                    if (!r.getUsername().equals(username))
+                        continue;
                     User u = uRepo.findById(r.getUsername());
                     Show s = sRepo.findById(r.getShowId());
                     Movie m = mRepo.findById(s.getMovieId());
-                    op.printlnMarked(new FullReservationDetails(r, u, s, m).toString());
+                    strings.add(new FullReservationDetails(r, u, s, m).toString());
                 }
+                printedItems += strings.size();
+                op.printlnMarkedByChunk(strings);
             }
         } finally {
             rRepo.endSequentialReading();
@@ -68,9 +72,24 @@ public class ReservationService {
             throw new PromptException("(!) Proiezione inesistente.");
         if (s.getShowDate().isBefore(LocalDateTime.now()))
             throw new PromptException("(!) Proiezione gia' avvenuta.");
-        int seatsTaken = countTicketsByShow(rRepo, showId);
+        
+        int seatsTaken = 0;
+        rRepo.startSequentialReading();
+        try {
+            List<Reservation> reservations;
+            while ((reservations = rRepo.getNextItems()) != null)
+                for (Reservation res : reservations)
+                    if (res.getShowId().equals(showId)) {
+                        if (res.getUsername().equals(username))
+                            throw new PromptException("(!) Prenotazione a nome dell'utente gia' presente. Procedere alla modifica.");
+                        seatsTaken += res.getTicketsNumber();
+                    }
+        } finally {
+            rRepo.endSequentialReading();
+        }
         if (seatsTaken + ticketsNumber > 200)
             throw new PromptException("(!) Posti insufficienti. Disponibili: " + (200 - seatsTaken) + ".");
+        
         Long id = rRepo.getMaxId();
         id = (id != null) ? id + 1 : 0;
         Reservation newR = new Reservation(id, username, showId, ticketsNumber);
@@ -81,27 +100,46 @@ public class ReservationService {
     public void editReservation(String username, Long reservationId, Long newShowId, Short ticketsNumber) {
         Reservation r = rRepo.findById(reservationId);
         Show newS = sRepo.findById(newShowId);
-        if (r == null) {
-            if (newS == null)
+        if (newS == null) {
+            if (r == null)
                 throw new PromptException("(!) Prenotazione e proiezione inesistenti.");
-            throw new PromptException("(!) Prenotazione inesistente.");
-        }
-        if (!r.getUsername().equals(username))
-            throw new PromptException("(!) La prenotazione appartiene ad un altro utente.");
-        Show oldS = sRepo.findById(r.getShowId());
-
-        if (newS == null)
+            if (!r.getUsername().equals(username))
+                throw new PromptException("(!) La prenotazione appartiene ad un altro utente e la proiezione non esiste.");
             throw new PromptException("(!) Proiezione inesistente.");
+        } else {
+            if (r == null)
+                throw new PromptException("(!) Prenotazione inesistente.");
+            if (!r.getUsername().equals(username))
+                throw new PromptException("(!) La prenotazione appartiene ad un altro utente.");
+        }
+        
+        Show oldS = sRepo.findById(r.getShowId());
         if (oldS.getShowDate().isBefore(LocalDateTime.now()) ||
                 (newS.getShowDate()).isBefore(LocalDateTime.now()))
             throw new PromptException("(!) Le proiezioni non devono essere gia' avvenute.");
 
-        Short tickets = (ticketsNumber != null) ? ticketsNumber : r.getTicketsNumber();
-        int seatsTaken = countTicketsByShow(rRepo, newShowId);
-        if (seatsTaken + tickets > 200)
+        int seatsTaken = 0;
+        if (!r.getShowId().equals(newShowId)) {
+            rRepo.startSequentialReading();
+            try {
+                List<Reservation> reservations;
+                while ((reservations = rRepo.getNextItems()) != null)
+                    for (Reservation res : reservations)
+                        if (res.getShowId().equals(newShowId)) {
+                            if (res.getUsername().equals(username))
+                                throw new PromptException("(!) Prenotazione a nome dell'utente gia' presente. Procedere alla modifica.");
+                            seatsTaken += res.getTicketsNumber();
+                        }
+            } finally {
+                rRepo.endSequentialReading();
+            }
+        } else
+            seatsTaken = countTicketsByShow(rRepo, newShowId) - r.getTicketsNumber();
+        if (seatsTaken + ticketsNumber > 200)
             throw new PromptException("(!) Posti insufficienti. Disponibili: " + (200 - seatsTaken) + ".");
+
         r.setShowId(newShowId);
-        r.setTicketsNumber(tickets);
+        r.setTicketsNumber(ticketsNumber);
         rRepo.update(r);
     }
 
@@ -112,7 +150,7 @@ public class ReservationService {
         if (!r.getUsername().equals(username))
             throw new PromptException("(!) La prenotazione appartiene ad un altro utente.");
         Show s = sRepo.findById(r.getShowId());
-        if (s.getShowDate().isAfter(LocalDateTime.now())) {
+        if (!s.getShowDate().isBefore(LocalDateTime.now())) {
             throw new PromptException("(!) Si può eliminare solamente la prenotazione di una proiezione gia' avvenuta.");
         }
         rRepo.delete(reservationId);
@@ -133,16 +171,20 @@ public class ReservationService {
         int printedItems = 0;
         try {
             List<Reservation> reservations;
-            while ((reservations = rRepo.getNextItems()) != null)
+            while ((reservations = rRepo.getNextItems()) != null) {
+                List<String> strings = new ArrayList<>();
                 for (Reservation r : reservations) {
                     Show s = sRepo.findById(r.getShowId());
-                    if (LocalDateTime.now().getYear() == s.getShowDate().getYear() && LocalDateTime.now().getDayOfYear() == s.getShowDate().getDayOfYear()) {
-                        User u = uRepo.findById(r.getUsername());
-                        Movie m = mRepo.findById(s.getMovieId());
-                        op.printlnMarked(new ReservationDetails(r, u, s, m).toString());
-                        printedItems++;
-                    }
+                    if (LocalDateTime.now().getYear() != s.getShowDate().getYear() || LocalDateTime.now().getDayOfYear() != s.getShowDate().getDayOfYear())
+                        continue;
+                    User u = uRepo.findById(r.getUsername());
+                    Movie m = mRepo.findById(s.getMovieId());
+                    strings.add(new ReservationDetails(r, u, s, m).toString());
                 }
+
+                printedItems += strings.size();
+                op.printlnMarkedByChunk(strings);
+            }
         } finally {
             rRepo.endSequentialReading();
         }
@@ -165,7 +207,8 @@ public class ReservationService {
         rRepo.startSequentialReading();
         try {
             List<Reservation> reservations;
-            while ((reservations = rRepo.getNextItems()) != null)
+            while ((reservations = rRepo.getNextItems()) != null) {
+                List<String> strings = new ArrayList<>();
                 for (Reservation r : reservations) {
                     User user = uRepo.findById(r.getUsername());
                     Show show = sRepo.findById(r.getShowId());
@@ -190,9 +233,11 @@ public class ReservationService {
                                 continue;
                     }
 
-                    op.printlnMarked(new ReservationDetails(r, user, show, movie).toString());
-                    printedItems++;
+                    strings.add(new ReservationDetails(r, user, show, movie).toString());
                 }
+                printedItems += strings.size();
+                op.printlnMarkedByChunk(strings);
+            }
         } finally {
             rRepo.endSequentialReading();
         }

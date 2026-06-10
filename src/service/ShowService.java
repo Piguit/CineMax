@@ -12,6 +12,7 @@ import utility.OutputPrinter;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 public class ShowService {
@@ -40,7 +41,8 @@ public class ShowService {
         sRepo.startSequentialReading();
         try {
             List<Show> shows;
-            while ((shows = sRepo.getNextItems()) != null)
+            while ((shows = sRepo.getNextItems()) != null) {
+                List<String> strings = new ArrayList<>();
                 for (Show s : shows) {
                     Movie movie = mRepo.findById(s.getMovieId());
                     if (titleExists && !movie.getTitle().toLowerCase().contains(partialTitle)) {
@@ -50,10 +52,12 @@ public class ShowService {
                         continue;
                     }
                     LocalDateTime date = s.getShowDate();
-                    if (from != null && (date.getYear() < from.getYear() || date.getDayOfYear() < from.getDayOfYear())) {
+                    if (from != null && !(date.getYear() > from.getYear() ||
+                        (date.getYear() == from.getYear() && date.getDayOfYear() >= from.getDayOfYear()))) {
                         continue;
                     }
-                    if (to != null && (date.getYear() > to.getYear() || date.getDayOfYear() > to.getDayOfYear())) {
+                    if (to != null && !(date.getYear() < to.getYear() ||
+                        (date.getYear() == to.getYear() && date.getDayOfYear() <= to.getDayOfYear()))) {
                         continue;
                     }
                     if (minCost != null && s.getTicketCost() < minCost) {
@@ -62,9 +66,12 @@ public class ShowService {
                     if (maxCost != null && s.getTicketCost() > maxCost) {
                         continue;
                     }
-                    op.printlnMarked(new ShowDetails(s, movie).toString());
-                    printedItems++;
+                    strings.add(new ShowDetails(s, movie).toString());
                 }
+                
+                printedItems += strings.size();
+                op.printlnMarkedByChunk(strings);
+            }
         } finally {
             sRepo.endSequentialReading();
         }
@@ -93,9 +100,7 @@ public class ShowService {
             while ((shows = sRepo.getNextItems()) != null)
                 for (Show s : shows) {
                     LocalDateTime endS = s.getShowDate().plusMinutes(mRepo.findById(s.getMovieId()).getRunningTime());
-                    if ((showDate.isAfter(s.getShowDate()) && showDate.isBefore(endS)) ||
-                        (endNew.isAfter(s.getShowDate()) && endNew.isBefore(endS)) ||
-                        (showDate.isBefore(s.getShowDate()) && endNew.isAfter(endS)))
+                    if (showDate.isBefore(endS) && endNew.isAfter(s.getShowDate()))
                         throw new PromptException("(!) La proiezione si sovrappone con la proiezione " + s.getId() + ".");
                 }
         } finally {

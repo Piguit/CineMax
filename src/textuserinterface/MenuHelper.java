@@ -35,7 +35,7 @@ public class MenuHelper {
         }
     }
 
-    public Byte readByte(String msg, boolean mandatory) {
+    public Byte readPositiveByte(String msg, boolean mandatory) {
         while (true) {
             op.print(msg);
             try {
@@ -49,16 +49,16 @@ public class MenuHelper {
                     }
                 }
                 byte result = Byte.parseByte(input);
-                if (result < 0)
+                if (result <= 0)
                     throw new NumberFormatException();
                 return result;
             } catch (NumberFormatException e) {
-                op.println("Inserire un numero intero non negativo.");
+                op.println("Inserire un numero intero positivo.");
             }
         }
     }
 
-    public Short readShort(String msg, boolean mandatory) {
+    public Short readPositiveShort(String msg, boolean mandatory) {
         while (true) {
             op.print(msg);
             try {
@@ -72,11 +72,11 @@ public class MenuHelper {
                     }
                 }
                 short result = Short.parseShort(input);
-                if (result < 0)
+                if (result <= 0)
                     throw new NumberFormatException();
                 return result;
             } catch (NumberFormatException e) {
-                op.println("Inserire un numero intero non negativo.");
+                op.println("Inserire un numero intero positivo.");
             }
         }
     }
