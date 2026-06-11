@@ -27,6 +27,7 @@ public class ShowDetails {
         this.showDate = show.getShowDate().format(DATE_TIME_FORMAT);
         this.ticketCost = String.valueOf(show.getTicketCost());
     }
+    
     /**
      * Restituisce una descrizione testuale delle informazioni di riepilogo della proiezione
      * @return stringa contenente i dati di riepilogo della proiezione nell'ordine specificato. <br>

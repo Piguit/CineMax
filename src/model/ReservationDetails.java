@@ -30,6 +30,7 @@ public class ReservationDetails {
         this.showDate = show.getShowDate().format(DATE_TIME_FORMAT);
         this.title = movie.getTitle();
     }
+    
     /**
      * Restituisce una descrizione testuale delle informazioni di riepilogo della prenotazione
      * @return stringa contenente i dati di riepilogo della prenotazione nell'ordine specificato. <br>

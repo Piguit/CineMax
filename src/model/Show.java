@@ -51,26 +51,26 @@ public class Show implements ItemInitializer<Show>, Identifiable<Long> {
         this.showDate = LocalDateTime.parse(array[2]);
         this.ticketCost = Float.parseFloat(array[3]);
     }
+
     /**
      * Istanzia e restituisce un nuovo oggetto {@code Show}
      * a partire da un array di stringhe contenente i suoi dati.
      * @param array array di stringhe con i campi ordinati dell'oggetto
      * @return oggetto istanziato del tipo {@code Show}
      */
-    @Override
     public Show getNewItem(String[] array) { return new Show(array); }
+    
     /**
      * Restituisce l'id univoco della proiezione
      * @return id univoco della proiezione
      */
-    @Override
     public Long getId() { return showId; }
+    
     /**
      * Restituisce l'array di stringhe composto da tutti i campi
      * del tipo {@code Show}
      * @return array di stringhe dei campi della classe {@code User}
      */
-    @Override
     public String[] getFields() {
         return new String[]{String.valueOf(showId), String.valueOf(movieId),
                 String.valueOf(showDate), String.valueOf(ticketCost)};
@@ -80,28 +80,32 @@ public class Show implements ItemInitializer<Show>, Identifiable<Long> {
      * Restituisce l'id del film
      * @return id del film
      */
-    public Long getMovieId() { return movieId; }
+    public Long getMovieId() {return movieId;}
 
     /**
      * Restituisce la data di proiezione
      * @return data di proiezione
      */
-    public LocalDateTime getShowDate() { return showDate; }
+    public LocalDateTime getShowDate() {return showDate;}
 
     /**
      * Restituisce il costo del biglietto
      * @return costo del biglietto
      */
-    public Float getTicketCost() { return ticketCost; }
+    public Float getTicketCost() {return ticketCost;}
 
     /** @param showId id della proiezione da assegnare */
-    public void setShowId(long showId) { this.showId = showId; }
+    public void setShowId(long showId) {this.showId = showId;}
+    
     /** @param movieId id del film da assegnare */
-    public void setMovieId(long movieId) { this.movieId = movieId; }
+    public void setMovieId(long movieId) {this.movieId = movieId;}
+    
     /** @param showDate data di proiezione da assegnare */
-    public void setShowDate(LocalDateTime showDate) { this.showDate = showDate; }
+    public void setShowDate(LocalDateTime showDate) {this.showDate = showDate;}
+    
     /** @param ticketCost costo del biglietto da assegnare */
-    public void setTicketCost(float ticketCost) { this.ticketCost = ticketCost; }
+    public void setTicketCost(float ticketCost) {this.ticketCost = ticketCost;}
+    
     /**
      * Restituisce una descrizione testuale delle informazioni della proiezione
      * con la concatenazione di tutti i campi divisi dal separatore '|'.
