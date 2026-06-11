@@ -44,7 +44,7 @@ public class ShowService {
      * @param sRepo repository delle proiezioni
      * @param rRepo repository delle prenotazioni
      * @param mRepo repository dei film
-     * @param op    oggetto per la stampa dell'output
+     * @param op oggetto per la stampa dell'output
      */
     public ShowService(ShowRepository sRepo, ReservationRepository rRepo, MovieRepository mRepo, OutputPrinter op) {
         this.sRepo = sRepo;
@@ -69,11 +69,11 @@ public class ShowService {
  * i filtri su titolo e genere. I risultati sono infine stampati a blocchi.
  * </p>
  * @param partialTitle sottostringa del titolo del film
- * @param genre        genere del film
- * @param from         data di inizio intervallo
- * @param to           data di fine intervallo
- * @param minCost      costo minimo del biglietto
- * @param maxCost      costo massimo del biglietto
+ * @param genre genere del film
+ * @param from data di inizio intervallo
+ * @param to data di fine intervallo
+ * @param minCost costo minimo del biglietto
+ * @param maxCost costo massimo del biglietto
  * @return il numero di proiezioni stampate che soddisfano i criteri
  */
     public int searchAndPrintShows(String partialTitle, String genre,
@@ -225,8 +225,8 @@ public class ShowService {
      * possono essere {@code null} per indicare che quel campo non deve essere
      * modificato.
      * </p>
-     * @param showId        ID della proiezione da modificare
-     * @param newShowDate   nuova data/ora
+     * @param showId ID della proiezione da modificare
+     * @param newShowDate nuova data/ora
      * @param newTicketCost nuovo costo del biglietto
      * @throws PromptException se la proiezione non esiste oppure se esistono
      *                         già prenotazioni per quella proiezione

@@ -11,8 +11,8 @@ import utility.OutputPrinter;
  * <p>
  * La classe {@code MovieService} gestisce le operazioni relative ai film
  * all'interno di CineMax.
-        * </p>
-        * <p>
+ * </p>
+ * <p>
  * Fornisce metodi per la ricerca e la stampa di film in base a criteri
  * opzionali ({@code searchAndPrintMovies}) e per l'aggiunta di un nuovo film
  * al catalogo ({@code addMovie}), evitando duplicati e generando un ID
@@ -46,8 +46,8 @@ public class MovieService {
      * della sottostringa.
      * </p>
      * @param partialTitle sottostringa del titolo (opzionale, case‑insensitive)
-     * @param director     nome completo del regista (opzionale, case‑insensitive)
-     * @param year         anno di uscita (opzionale)
+     * @param director nome completo del regista (opzionale, case‑insensitive)
+     * @param year anno di uscita (opzionale)
      * @return il numero di film stampati (che soddisfano i criteri)
      */
     public int searchAndPrintMovies(String partialTitle, String director, Short year) {
@@ -87,12 +87,12 @@ public class MovieService {
      * restituito l'ID del film esistente. L'ID per un nuovo film viene
      * calcolato come {@code maxId + 1}.
      * </p>
-     * @param title       titolo del film
-     * @param director    regista del film
-     * @param year        anno di uscita
-     * @param genre       genere del film
+     * @param title titolo del film
+     * @param director regista del film
+     * @param year anno di uscita
+     * @param genre genere del film
      * @param runningTime durata in minuti
-     * @param minAge      età minima richiesta per il pubblico
+     * @param minAge età minima richiesta per il pubblico
      * @return l'ID del film (esistente o appena creato)
      */
     public Long addMovie(String title, String director, Short year, String genre, Short runningTime, Byte minAge) {

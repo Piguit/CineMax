@@ -79,12 +79,12 @@ public class Authentication {
 
     /**
      * Registra un nuovo cliente (ruolo {@link Role#CLIENT}) nel sistema.
-     * @param username   username desiderato che deve essere univoco
-     * @param name       nome del cliente
-     * @param surname    cognome del cliente
-     * @param password   password in chiaro che verrà sottoposta ad hashing
-     * @param birthDate  data di nascita che può essere {@code null}
-     * @param residence  luogo di domicilio
+     * @param username username desiderato che deve essere univoco
+     * @param name nome del cliente
+     * @param surname cognome del cliente
+     * @param password password in chiaro che verrà sottoposta ad hashing
+     * @param birthDate data di nascita che può essere {@code null}
+     * @param residence luogo di domicilio
      * @return {@code true} se la registrazione ha successo, {@code false}
      *         se lo username è già occupato
      * @throws SafetyException se si verifica un errore critico durante l'hashing della password
@@ -106,12 +106,12 @@ public class Authentication {
 
     /**
      * Registra un nuovo amministratore (ruolo {@link Role#ADMIN}) nel sistema.
-     * @param username   username desiderato che deve essere univoco
-     * @param name       nome dell'amministratore
-     * @param surname    cognome dell'amministratore
-     * @param password   password in chiaro che verrà sottoposta ad hashing
-     * @param birthDate  data di nascita che può essere {@code null}
-     * @param residence  luogo di domicilio
+     * @param username username desiderato che deve essere univoco
+     * @param name nome dell'amministratore
+     * @param surname cognome dell'amministratore
+     * @param password password in chiaro che verrà sottoposta ad hashing
+     * @param birthDate data di nascita che può essere {@code null}
+     * @param residence luogo di domicilio
      * @return {@code true} se la registrazione ha successo, {@code false}
      *         se lo username è già occupato
      * @throws SafetyException se si verifica un errore critico durante l'hashing della password

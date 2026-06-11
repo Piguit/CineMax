@@ -52,7 +52,7 @@ public class ReservationService {
      * @param sRepo repository delle proiezioni
      * @param uRepo repository degli utenti
      * @param mRepo repository dei film
-     * @param op    oggetto per la stampa formattata dell'output
+     * @param op oggetto per la stampa formattata dell'output
      */
     public ReservationService(ReservationRepository rRepo, ShowRepository sRepo,
                               UserRepository uRepo, MovieRepository mRepo, OutputPrinter op) {
@@ -172,10 +172,10 @@ public class ReservationService {
      * Se la proiezione rimane la stessa, i posti già occupati dall'utente vengono
      * sottratti dal conteggio dei posti occupati.
      * </p>
-     * @param username        username del cliente proprietario della prenotazione
-     * @param reservationId   ID della prenotazione da modificare
-     * @param newShowId       ID della nuova proiezione (può essere uguale a quella originale)
-     * @param ticketsNumber   nuovo numero di biglietti
+     * @param username username del cliente proprietario della prenotazione
+     * @param reservationId ID della prenotazione da modificare
+     * @param newShowId ID della nuova proiezione (può essere uguale a quella originale)
+     * @param ticketsNumber nuovo numero di biglietti
      * @throws PromptException se la prenotazione o la proiezione non esistono,
      *                         se la prenotazione appartiene ad un altro utente,
      *                         se una delle proiezioni è già avvenuta,
@@ -316,11 +316,11 @@ public class ReservationService {
      * La ricerca viene eseguita scandendo sequenzialmente il repository delle prenotazioni.
      * </p>
      * @param reservationId ID esatto della prenotazione
-     * @param name          nome del cliente
-     * @param surname       cognome del cliente
-     * @param partialTitle  sottostringa del titolo del film
-     * @param from          data di inizio intervallo
-     * @param to            data di fine intervallo
+     * @param name nome del cliente
+     * @param surname cognome del cliente
+     * @param partialTitle sottostringa del titolo del film
+     * @param from data di inizio intervallo
+     * @param to data di fine intervallo
      * @return il numero di prenotazioni stampate che soddisfano i criteri
      */
     public int searchAndPrintReservations(Long reservationId, String name,
