@@ -32,6 +32,7 @@ public class Reservation implements ItemInitializer<Reservation>, Identifiable<L
         this.showId = showId;
         this.ticketsNumber = ticketsNumber;
     }
+
     /**
      * Costruttore che istanza un oggetto {@code Reservation} ed esegue il parsing
      * di un array di stringhe contenente i dati della prenotazione.
@@ -47,18 +48,21 @@ public class Reservation implements ItemInitializer<Reservation>, Identifiable<L
         this.showId = Long.parseLong(array[2]);
         this.ticketsNumber = Short.parseShort(array[3]);
     }
+
     /**
      * Istanzia e restituisce un nuovo oggetto {@code Reservation}
      * a partire da un array di stringhe contenente i suoi dati.
      * @param array array di stringhe con i campi ordinati dell'oggetto
      * @return oggetto istanziato del tipo {@code Reservation}
      */
-    public Reservation getNewItem(String[] array){ return new Reservation(array); }
+    public Reservation getNewItem(String[] array) {return new Reservation(array);}
+    
     /**
      * Restituisce l'id univoco della prenotazione
      * @return id univoco della prenotazione
      */
-    public Long getId() {return reservationId; }
+    public Long getId() {return reservationId;}
+    
     /**
      * Restituisce l'array di stringhe composto da tutti i campi
      * del tipo {@code Reservation}
@@ -66,20 +70,20 @@ public class Reservation implements ItemInitializer<Reservation>, Identifiable<L
      */
     public String[] getFields(){
         return new String[]{String.valueOf(reservationId), username, String.valueOf(showId),
-                String.valueOf(ticketsNumber)/*, String.valueOf(showTime)*/} ;
+                String.valueOf(ticketsNumber)} ;
     }
 
     /**
      * Restituisce il nome utente della prenotazione
      * @return nome utente della prenotazione
      */
-    public String getUsername(){return username; }
+    public String getUsername() {return username;}
 
     /**
      * Restituisce l'id di proiezione nella prenotazione
      * @return l'id di proiezione della prenotazione
      */
-    public Long getShowId(){return showId; }
+    public Long getShowId() {return showId;}
 
     /**
      * Restituisce il numero di biglietti
@@ -89,12 +93,16 @@ public class Reservation implements ItemInitializer<Reservation>, Identifiable<L
 
     /** @param reservationId id di prenotazione da assegnare */
     public void setReservationId(long reservationId){this.reservationId = reservationId; }
+    
     /** @param username nome utente della prenotazione da assegnare */
     public void setUsername(String username){this.username = username; }
+    
     /** @param showId id di proiezione della prenotazione da assegnare*/
     public void setShowId(long showId){this.showId = showId; }
+    
     /** @param ticketsNumber numero di biglietti da assegnare */
     public void setTicketsNumber(short ticketsNumber){this.ticketsNumber = ticketsNumber; }
+    
     /**
      * Restituisce una descrizione testuale delle informazioni della prenotazione
      * con la concatenazione di tutti i campi divisi dal separatore '|'.

@@ -77,30 +77,27 @@ public class User implements ItemInitializer<User>, Identifiable<String> {
                 break;
         }
     }
+
     /**
      * Istanzia e restituisce un nuovo oggetto {@code User}
      * a partire da un array di stringhe contenente i suoi dati.
      * @param fields array di stringhe con i campi ordinati dell'oggetto
      * @return oggetto istanziato del tipo {@code User}
      */
-    public User getNewItem(String[] fields) {
-        return new User(fields);
-    }
+    public User getNewItem(String[] fields) {return new User(fields);}
 
     /**
      * Restituisce il nome utente univoco
      * @return nome utente univoco
      */
-    public String getId(){
-        return username;
-    }
+    public String getId() {return username;}
 
     /**
      * Restituisce l'array di stringhe composto da tutti i campi
      * del tipo {@code User}
      * @return array di stringhe dei campi della classe {@code User}
      */
-    public String[] getFields(){
+    public String[] getFields() {
         return new String[]{username, name, surname, password, String.valueOf(birthDate), residence, role.name()};
     }
 
@@ -108,77 +105,57 @@ public class User implements ItemInitializer<User>, Identifiable<String> {
      * Restituisce il nome dell'utente
      * @return nome dell'utente
      */
-    public String getName(){
-        return name;
-    }
+    public String getName() {return name;}
 
     /**
      * Restituisce il cognome dell'utente
      * @return cognome dell'utente
      */
-    public String getSurname(){
-        return surname;
-    }
+    public String getSurname() {return surname;}
 
     /**
      * Restituisce la password dell'utente
      * @return password dell'utente
      */
-    public String getPassword(){
-        return password;
-    }
+    public String getPassword() {return password;}
 
     /**
      * Restituisce la data di nascita dell'utente
      * @return data di nascita dell'utente
      */
-    public LocalDate getBirthDate(){
-        return birthDate;
-    }
+    public LocalDate getBirthDate() {return birthDate;}
 
     /**
      * Restituisce l'indirizzo di residenza dell'utente
      * @return l'indirizzo di residenza dell'utente
      */
-    public String getResidence(){
-        return residence;
-    }
+    public String getResidence() {return residence;}
 
     /**
      * Restituisce il ruolo dell'utente
      * @return ruolo dell'utente
      */
-    public Role getRole(){
-        return role;
-    }
+    public Role getRole() {return role;}
 
     /** @param username nuovo nome utente da assegnare */
-    public void setUsername(String username){
-        this.username = username;
-    }
+    public void setUsername(String username) {this.username = username;}
+    
     /** @param name nome dell'utente da assegnare*/
-    public void setName(String name){
-        this.name = name;
-    }
+    public void setName(String name) {this.name = name;}
+
     /** @param surname cognome dell'utente da assegnare*/
-    public void setSurname(String surname){
-        this.surname = surname;
-    }
+    public void setSurname(String surname) {this.surname = surname;}
+    
     /** @param password password dell'utente da assegnare*/
-    public void setPassword(String password){
-        this.password = password;
-    }
+    public void setPassword(String password) {this.password = password;}
+    
     /** @param birthDate data di nascita dell'utente da assegnare*/
-    public void setBirthDate(LocalDate birthDate){
-        this.birthDate = birthDate;
-    }
+    public void setBirthDate(LocalDate birthDate) {this.birthDate = birthDate;}
+    
     /** @param residence indirizzo di residenza dell'utente da assegnare*/
-    public void setResidence(String residence){
-        this.residence = residence;
-    }
+    public void setResidence(String residence) {this.residence = residence;}
+    
     /** @param role ruolo da assegnare all'utente */
-    public void setRole(Role role){
-        this.role = role;
-    }
+    public void setRole(Role role) {this.role = role;}
 }
 

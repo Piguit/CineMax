@@ -7,17 +7,41 @@ import java.util.Scanner;
 
 import utility.OutputPrinter;
 
+/**
+ * Classe di supporto per la lettura e validazione dell'input da console.
+ * Ogni metodo implementa un ciclo di retry che si ripete finché l'input
+ * non soddisfa i requisiti, stampando un messaggio di errore ad ogni
+ * tentativo fallito. Il parametro {@code mandatory} specifica se l'input è
+ * obbligatorio o meno.
+ */
 public class MenuHelper {
+    /** 
+     * Scanner condiviso da tutti i metodi di lettura.
+     * */
     private static final Scanner scanner = new Scanner(System.in);
+    /** Formato atteso per i campi data: giorno/mese/anno. */
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    /** Formato atteso per i campi data e ora: giorno/mese/anno ora:minuti. */
     private static final DateTimeFormatter DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
-
+    /** Istanza di {@link OutputPrinter} usata per stampare prompt e messaggi di errore. */
     private OutputPrinter op;
 
+    /**
+     * Costruisce un {@code MenuHelper} con l'output printer specificato.
+     * @param op printer usato per stampare prompt e messaggi di errore
+     */
     public MenuHelper(OutputPrinter op) {
         this.op = op;
     }
 
+    /**
+     * Legge un intero nell'intervallo [{@code min}, {@code max}] (estremi inclusi).
+     * Il campo è sempre obbligatorio.
+     * @param msg prompt da mostrare all'utente
+     * @param min valore minimo accettato
+     * @param max valore massimo accettato
+     * @return intero letto, compreso tra {@code min} e {@code max}
+     */
     public int readInt(String msg, int min, int max) {
         int val;
         while (true) {
@@ -35,6 +59,13 @@ public class MenuHelper {
         }
     }
 
+    /**
+     * Legge un {@code Byte} strettamente positivo (> 0).
+     * @param msg prompt da mostrare all'utente
+     * @param mandatory se {@code true}, input vuoto viene rifiutato;
+     *                  se {@code false}, input vuoto restituisce {@code null}
+     * @return valore letto oppure {@code null} se non obbligatorio e input vuoto
+     */
     public Byte readPositiveByte(String msg, boolean mandatory) {
         while (true) {
             op.print(msg);
@@ -58,6 +89,13 @@ public class MenuHelper {
         }
     }
 
+    /**
+     * Legge uno {@code Short} strettamente positivo (> 0).
+     * @param msg prompt da mostrare all'utente
+     * @param mandatory se {@code true}, input vuoto viene rifiutato;
+     *                  se {@code false}, input vuoto restituisce {@code null}
+     * @return valore letto oppure {@code null} se non obbligatorio e input vuoto
+     */
     public Short readPositiveShort(String msg, boolean mandatory) {
         while (true) {
             op.print(msg);
@@ -81,6 +119,13 @@ public class MenuHelper {
         }
     }
 
+    /**
+     * Legge un {@code Long} non negativo.
+     * @param msg prompt da mostrare all'utente
+     * @param mandatory se {@code true}, input vuoto viene rifiutato;
+     *                  se {@code false}, input vuoto restituisce {@code null}
+     * @return valore letto oppure {@code null} se non obbligatorio e input vuoto
+     */
     public Long readLong(String msg, boolean mandatory) {
         while (true) {
             op.print(msg);
@@ -104,6 +149,13 @@ public class MenuHelper {
         }
     }
 
+    /**
+     * Legge un {@code Float} non negativo.
+     * @param msg prompt da mostrare all'utente
+     * @param mandatory se {@code true}, input vuoto viene rifiutato;
+     *                  se {@code false}, input vuoto restituisce {@code null}
+     * @return valore letto oppure {@code null} se non obbligatorio e input vuoto
+     */
     public Float readFloat(String msg, boolean mandatory) {
         while (true) {
             op.print(msg);
@@ -127,6 +179,15 @@ public class MenuHelper {
         }
     }
 
+    /**
+     * Legge una stringa non contenente i caratteri {@code ~} e {@code |},
+     * riservati rispettivamente al separatore di campo e al formato
+     * {@code toString()} delle entità model. L'input subisce trim.
+     * @param msg prompt da mostrare all'utente
+     * @param mandatory se {@code true}, input vuoto viene rifiutato;
+     *                  se {@code false}, input vuoto restituisce {@code null}
+     * @return stringa letta oppure {@code null} se non obbligatorio e input vuoto
+     */
     public String readString(String msg, boolean mandatory) {
         while (true) {
             try {
@@ -143,6 +204,13 @@ public class MenuHelper {
         }
     }
 
+    /**
+     * Legge una data nel formato {@code dd/MM/yyyy}.
+     * @param msg prompt da mostrare all'utente
+     * @param mandatory se {@code true}, input vuoto viene rifiutato;
+     *                  se {@code false}, input vuoto restituisce {@code null}
+     * @return data letta oppure {@code null} se non obbligatorio e input vuoto
+     */
     public LocalDate readDate(String msg, boolean mandatory) {
         while (true) {
             op.print(msg);
@@ -163,6 +231,13 @@ public class MenuHelper {
         }
     }
 
+    /**
+     * Legge una data e ora nel formato {@code dd/MM/yyyy HH:mm}.
+     * @param msg prompt da mostrare all'utente
+     * @param mandatory se {@code true}, input vuoto viene rifiutato;
+     *                  se {@code false}, input vuoto restituisce {@code null}
+     * @return data e ora lette oppure {@code null} se non obbligatorio e input vuoto
+     */
     public LocalDateTime readDateAndTime(String msg, boolean mandatory) {
         while (true) {
             op.print(msg);

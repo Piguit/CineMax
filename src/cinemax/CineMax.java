@@ -13,13 +13,30 @@ import utility.SafetyException;
 import repository.FileException;
 import utility.OutputPrinter;
 
+/**
+ * Classe che contiene il metodo main. Possiede dei campi final
+ * che centralizzano il controllo del formato di output dell'intera
+ * applicazione.
+ */
 public class CineMax {
-    public static final String MARGIN = "        ";
-    public static final String MARGIN_END = "      * ";
-    public static final int ROW_LENGTH = 76;
+    /** Il margine standard da anteporre alle stringhe stampate. */
+    private static final String MARGIN = "        ";
+    /**
+     * Il margine speciale da anteporre alle stringhe in un elenco
+     * di opzioni o risultati.
+    */
+    private static final String MARKER = "      * ";
+    /** Lunghezza massima di caratteri stampabili per riga (non considera la lunghezza dei margini) */
+    private static final int ROW_LENGTH = 76;
 
+    /**
+     * Metodo main che istanzia tutti i componenti necessari, applicando
+     * le opportune dependency-injections e avviando infine l'interfaccia
+     * testuale dell'applicazione.
+     * @param args array di stringhe in chiamata al programma; l'applicazione non ne fa uso
+     */
     public static void main(String[] args) {
-        OutputPrinter op = new OutputPrinter(MARGIN, MARGIN_END, ROW_LENGTH);
+        OutputPrinter op = new OutputPrinter(MARGIN, MARKER, ROW_LENGTH);
         try {
             UserRepository uRepo = new UserRepository();
             MovieRepository mRepo = new MovieRepository();

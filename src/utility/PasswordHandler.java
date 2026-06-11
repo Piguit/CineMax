@@ -75,7 +75,7 @@ public class PasswordHandler {
      * l'utilizzo di {@link SecureRandom}
      * @return array di 16 byte casuali
      */
-    public static byte[] generateSalt() {
+    private static byte[] generateSalt() {
         SecureRandom random = new SecureRandom();
         byte[] salt = new byte[SALT_LENGTH];
         random.nextBytes(salt);

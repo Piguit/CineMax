@@ -43,6 +43,7 @@ public class Movie implements ItemInitializer<Movie>, Identifiable<Long> {
         this.runningTime = runningTime;
         this.minAge = minAge;
     }
+    
     /**
      * Costruttore che istanza un oggetto {@code Movie} ed esegue il parsing
      * di un array di stringhe contenente i dati del film.
@@ -69,17 +70,13 @@ public class Movie implements ItemInitializer<Movie>, Identifiable<Long> {
      * @param array array di stringhe con i campi ordinati dell'oggetto
      * @return oggetto istanziato del tipo {@code Movie}
      */
-    public Movie getNewItem(String[] array) {
-        return new Movie(array);
-    }
+    public Movie getNewItem(String[] array) {return new Movie(array);}
 
     /**
      * Restituisce l'id univoco del film
      * @return id univoco del film
      */
-    public Long getId() {
-        return movieId;
-    }
+    public Long getId() {return movieId;}
 
     /**
      * Restituisce l'array di stringhe composto da tutti i campi
@@ -95,77 +92,58 @@ public class Movie implements ItemInitializer<Movie>, Identifiable<Long> {
      * Restituisce il titolo del film
      * @return titolo del film
      */
-    public String getTitle() {
-        return title;
-    }
+    public String getTitle() {return title;}
 
     /**
      * Restituisce il regista del film
      * @return regista del film
      */
-    public String getDirector() {
-        return director;
-    }
+    public String getDirector() {return director;}
 
     /**
      * Restituisce anno di uscita del film
      * @return anno di uscita del film
      */
-    public Short getYear() {
-        return year;
-    }
+    public Short getYear() {return year;}
 
     /**
      * Restituisce il genere del film
      * @return genere del film
      */
-    public String getGenre() {
-        return genre;
-    }
+    public String getGenre() {return genre;}
 
     /**
      * Restituisce la durata del film
      * @return durata del film
      */
-    public Short getRunningTime() {
-        return runningTime;
-    }
+    public Short getRunningTime() {return runningTime;}
 
     /**
      * Restituisce l'età minima richiesta del film
      * @return età minima richiesta del film
      */
-    public Byte getMinAge() {
-        return minAge;
-    }
+    public Byte getMinAge() {return minAge;}
+    
     /** @param movieId id del film da assegnare*/
-    public void setMovieId(long movieId) {
-        this.movieId = movieId;
-    }
+    public void setMovieId(long movieId) {this.movieId = movieId;}
+    
     /** @param title titolo del film da assegnare*/
-    public void setTitle(String title) {
-        this.title = title;
-    }
+    public void setTitle(String title) {this.title = title;}
+    
     /** @param director regista del film da assegnare*/
-    public void setDirector(String director) {
-        this.director = director;
-    }
+    public void setDirector(String director) {this.director = director;}
+    
     /** @param year anno di uscita del film da assegnare*/
-    public void setYear(short year) {
-        this.year = year;
-    }
+    public void setYear(short year) {this.year = year;}
+    
     /** @param genre genere del film da assegnare*/
-    public void setGenre(String genre) {
-        this.genre = genre;
-    }
+    public void setGenre(String genre) {this.genre = genre;}
+    
     /** @param runningTime durata del film da assegnare*/
-    public void setRunningTime(short runningTime) {
-        this.runningTime = runningTime;
-    }
+    public void setRunningTime(short runningTime) {this.runningTime = runningTime;}
+    
     /** @param minAge età minima del film da assegnare*/
-    public void setMinAge(byte minAge) {
-        this.minAge = minAge;
-    }
+    public void setMinAge(byte minAge) {this.minAge = minAge;}
 
     /**
      * Restituisce una descrizione testuale delle informazioni del film
