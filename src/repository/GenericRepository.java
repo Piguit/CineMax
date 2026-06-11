@@ -21,9 +21,10 @@ import java.util.List;
  * La lettura avviene per blocchi di {@value #PAGE_DIMENSION} byte tramite
  * {@link FileChannel} e {@link ByteBuffer} di Java NIO. Le operazioni di
  * modifica e cancellazione adottano il pattern copy-on-write su file temporaneo.
- *
  * @param <E> tipo dell'identificativo, deve estendere {@link Comparable}
  * @param <F> tipo dell'entità, deve implementare {@link ItemInitializer} e {@link Identifiable}
+ * @author Piergiorgio Tomaciello 761013
+ * CO
  */
 public class GenericRepository<E extends Comparable<E>, F extends ItemInitializer<F> & Identifiable<E>> {
     /** Dimensione in byte del buffer di lettura/scrittura per le operazioni I/O. */

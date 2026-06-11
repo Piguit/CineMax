@@ -7,6 +7,9 @@ import java.time.format.DateTimeFormatter;
  * La classe {@code ShowDetails} si utilizza per rappresentare dei
  * dati specifici di una proiezione all'interno del sistema.
  * </p>
+ * @author Edo Hodzic 761022
+ * @author Piergiorgio Tomaciello 761013
+ * CO
  */
 public class ShowDetails {
     private static final DateTimeFormatter DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");

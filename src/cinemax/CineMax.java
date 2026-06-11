@@ -17,6 +17,8 @@ import utility.OutputPrinter;
  * Classe che contiene il metodo main. Possiede dei campi final
  * che centralizzano il controllo del formato di output dell'intera
  * applicazione.
+ * @author Piergiorgio Tomaciello 761013
+ * CO
  */
 public class CineMax {
     /** Il margine standard da anteporre alle stringhe stampate. */

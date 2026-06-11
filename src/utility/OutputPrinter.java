@@ -6,6 +6,8 @@ import java.util.List;
  * Classe preposta alla stampa custom di stringhe.
  * La formattazione eseguita dalle istanze di questa classe produce un margine a sinistra
  * delle varie righe da stampare; una riga troppo lunga viene divisa su più righe.
+ * @author Piergiorgio Tomaciello 761013
+ * CO
  */
 public class OutputPrinter {
     private final String margin;

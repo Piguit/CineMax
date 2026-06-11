@@ -6,6 +6,10 @@ import java.time.format.DateTimeFormatter;
  * La classe {@code ReservationDetails} si utilizza per rappresentare dei
  * dati specifici di una prenotazione all'interno del sistema.
  * </p>
+ * @author Edo Hodzic 761022
+ * @author Piergiorgio Tomaciello 761013
+ * @author Tamirat Tucci 756969
+ * CO
  */
 public class ReservationDetails {
     private static final DateTimeFormatter DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");

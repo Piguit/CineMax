@@ -11,6 +11,10 @@ import java.time.LocalDateTime;
  * con il campo {@code showId} che rappresenta univocamente la proiezione.
  * Comprende dei getters e setters relativi ai campi della proiezione.
  * </p>
+ * @author Edo Hodzic 761022
+ * @author Piergiorgio Tomaciello 761013
+ * @author Tamirat Tucci 756969
+ * CO
  */
 public class Show implements ItemInitializer<Show>, Identifiable<Long> {
 

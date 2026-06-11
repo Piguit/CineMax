@@ -13,6 +13,9 @@ import utility.OutputPrinter;
  * non soddisfa i requisiti, stampando un messaggio di errore ad ogni
  * tentativo fallito. Il parametro {@code mandatory} specifica se l'input è
  * obbligatorio o meno.
+ * @author Piergiorgio Tomaciello 761013
+ * @author Tamirat Tucci 756969
+ * CO
  */
 public class MenuHelper {
     /** 

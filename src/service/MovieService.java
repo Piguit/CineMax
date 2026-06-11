@@ -22,6 +22,9 @@ import utility.OutputPrinter;
  * La ricerca avviene tramite scansione sequenziale del repository dei film
  * e utilizza {@link OutputPrinter} per visualizzare i risultati a blocchi.
  * </p>
+ * @author Piergiorgio Tomaciello 761013
+ * @author Tamirat Tucci 756969
+ * CO
  */
 public class MovieService {
     private final MovieRepository mRepo;

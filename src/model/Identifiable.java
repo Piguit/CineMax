@@ -4,6 +4,10 @@ package model;
  * L'interfaccia {@code Identifiable<E>} definisce il contratto che
  * le classi che la implementano devono rispettare.
  * @param <E> tipo che sarà inserito in base alla classe che lo implementa
+ * @author Edo Hodzic 761022
+ * @author Piergiorgio Tomaciello 761013
+ * @author Tamirat Tucci 756969
+ * CO
  */
 public interface Identifiable<E> {
     /**

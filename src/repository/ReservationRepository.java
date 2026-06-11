@@ -8,6 +8,9 @@ import java.util.List;
  * Repository specifica per entità di tipo {@link Reservation}.
  * Implementa l'interfaccia {@link FileRepository} per oggetti
  * {@link Reservation} identificabili tramite id {@link Long}.
+ * @author Piergiorgio Tomaciello 761013
+ * @author Tamirat Tucci 756969
+ * CO
  */
 public class ReservationRepository implements FileRepository<Reservation, Long> {
     /** Il nome del file in cui salvare le prenotazioni. */

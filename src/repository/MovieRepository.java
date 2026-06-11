@@ -8,6 +8,9 @@ import model.Movie;
  * Repository specifica per entità di tipo {@link Movie}.
  * Implementa l'interfaccia {@link FileRepository} per oggetti
  * {@link Movie} identificabili tramite id {@link Long}.
+ * @author Piergiorgio Tomaciello 761013
+ * @author Tamirat Tucci 756969
+ * CO
  */
 public class MovieRepository implements FileRepository<Movie, Long> {
     /** Il nome del file in cui salvare i film. */

@@ -6,6 +6,8 @@ package repository;
  * lettura, scrittura o spostamento del file di dati). Estende
  * {@link RuntimeException} per non obbligare i chiamanti a gestirla
  * esplicitamente; viene catturata nel {@code main} come errore fatale.
+ * @author Piergiorgio Tomaciello 761013
+ * CO
  */
 public class FileException extends RuntimeException {
     /**

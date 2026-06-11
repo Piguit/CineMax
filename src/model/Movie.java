@@ -10,7 +10,10 @@ package model;
  * con il campo {@code movieId} che rappresenta univocamente il film.
  * Comprende dei getters e setters relativi ai campi del film.
  * </p>
- * @author
+ * @author Edo Hodzic 761022
+ * @author Piergiorgio Tomaciello 761013
+ * @author Tamirat Tucci 756969
+ * CO
  */
 public class Movie implements ItemInitializer<Movie>, Identifiable<Long> {
     private long movieId;

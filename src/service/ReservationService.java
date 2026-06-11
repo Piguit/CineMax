@@ -38,6 +38,10 @@ import java.util.List;
  * situazioni prevedibili (proiezione inesistente, data passata, posti insufficienti,
  * prenotazione già esistente, etc.).
  * </p>
+ * @author Edo Hodzic 761022
+ * @author Piergiorgio Tomaciello 761013
+ * @author Tamirat Tucci 756969
+ * CO
  */
 public class ReservationService {
     private final ReservationRepository rRepo;

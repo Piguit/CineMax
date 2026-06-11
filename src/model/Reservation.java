@@ -10,6 +10,10 @@ package model;
  * con il campo {@code reservationId} che rappresenta univocamente la prenotazione.
  * Comprende dei getters e setters relativi ai campi della prenotazione.
  * </p>
+ * @author Edo Hodzic 761022
+ * @author Piergiorgio Tomaciello 761013
+ * @author Tamirat Tucci 756969
+ * CO
  */
 public class Reservation implements ItemInitializer<Reservation>, Identifiable<Long> {
     private long reservationId;

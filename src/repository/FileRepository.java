@@ -9,6 +9,9 @@ import java.util.List;
  *
  * @param <F>  tipo dell'entità gestita dal repository
  * @param <ID> tipo dell'identificativo univoco dell'entità
+ * @author Piergiorgio Tomaciello 761013
+ * @author Tamirat Tucci 756969
+ * CO
  */
 public interface FileRepository<F, ID> {
     /**

@@ -13,6 +13,9 @@ import java.time.*;
  * Non contiene logica di business né accede direttamente ai repository.
  * Le {@link PromptException} lanciate dai service vengono catturate qui
  * e mostrate all'utente senza interrompere il ciclo dell'applicazione.
+ * @author Piergiorgio Tomaciello 761013
+ * @author Tamirat Tucci 756969
+ * CO
  */
 public class TextUserInterface {
     /** Separatore stampato all'inizio di ogni menu. */

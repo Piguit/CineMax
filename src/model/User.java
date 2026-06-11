@@ -13,6 +13,10 @@ import java.time.LocalDate;
  * con il campo {@code username} che rappresenta univocamente l'utente.
  * Comprende dei getters e setters relativi ai campi dell'utente.
  * </p>
+ * @author Edo Hodzic 761022
+ * @author Piergiorgio Tomaciello 761013
+ * @author Tamirat Tucci 756969
+ * CO
  */
 public class User implements ItemInitializer<User>, Identifiable<String> {
     private String username;

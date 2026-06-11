@@ -7,6 +7,10 @@ package model;
  * I ruoli in questione si suddividono tra: {@code CLIENT}, {@code PROJECTIONIST},
  * {@code BOXOFFICECLERK} e {@code ADMIN}
  * </p>
+ * @author Edo Hodzic 761022
+ * @author Piergiorgio Tomaciello 761013
+ * @author Tamirat Tucci 756969
+ * CO
  */
 public enum Role {
     /** Rappresenta il cliente nel sistema. I clienti registrati possono eseguire

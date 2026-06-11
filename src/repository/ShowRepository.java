@@ -8,6 +8,9 @@ import model.Show;
  * Repository specifica per entità di tipo {@link Show}.
  * Implementa l'interfaccia {@link FileRepository} per oggetti
  * {@link Show} identificabili tramite id {@link Long}.
+ * @author Piergiorgio Tomaciello 761013
+ * @author Tamirat Tucci 756969
+ * CO
  */
 public class ShowRepository implements FileRepository<Show, Long> {
     /** Il nome del file in cui salvare le proiezioni. */

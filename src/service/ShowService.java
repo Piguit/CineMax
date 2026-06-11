@@ -32,6 +32,9 @@ import java.util.List;
  * La capacità massima della sala è fissata a 200 posti e il numero di posti liberi
  * viene calcolato sottraendo i biglietti prenotati dalla capienza totale.
  * </p>
+ * @author Piergiorgio Tomaciello 761013
+ * @author Tamirat Tucci 756969
+ * CO
  */
 public class ShowService {
     private final ShowRepository sRepo;

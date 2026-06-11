@@ -4,6 +4,8 @@ package utility;
  * La classe {@code SafetyException} si utilizza come sottoclasse di {@link RuntimeException}
  * per comunicare eccezioni fatali derivanti da un setup scorretto
  * dell'ambiente di gestione della crittografia.
+ * @author Piergiorgio Tomaciello 761013
+ * CO
  */
 public class SafetyException extends RuntimeException {
     /**

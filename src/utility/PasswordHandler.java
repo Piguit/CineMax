@@ -11,6 +11,8 @@ import java.util.Base64;
  * La classe {@code PasswordHandler} si utilizza per la gestione delle
  * funzioni di hashing e di verifica delle password all'interno del sistema
  * con l'utilizzo dell'algoritmo di hashing PBKDF2WithHmacSHA256.
+ * @author Piergiorgio Tomaciello 761013
+ * CO
  */
 public class PasswordHandler {
     private static final String ALGORITHM = "PBKDF2WithHmacSHA256";

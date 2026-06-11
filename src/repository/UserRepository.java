@@ -8,6 +8,9 @@ import model.User;
  * Repository specifica per entità di tipo {@link User}.
  * Implementa l'interfaccia {@link FileRepository} per oggetti
  * {@link User} identificabili tramite id {@link String}.
+ * @author Piergiorgio Tomaciello 761013
+ * @author Tamirat Tucci 756969
+ * CO
  */
 public class UserRepository implements FileRepository<User, String> {
     /** Il nome del file in cui salvare gli utenti. */

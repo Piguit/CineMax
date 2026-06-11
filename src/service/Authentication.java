@@ -26,6 +26,9 @@ import java.time.LocalDate;
  * Tutte le password vengono gestite in modo sicuro tramite la classe
  * {@link PasswordHandler}, che applica hashing e verifica.
  * </p>
+ * @author Piergiorgio Tomaciello 761013
+ * @author Tamirat Tucci 756969
+ * CO
  */
 public class Authentication {
     private final UserRepository uRepo;

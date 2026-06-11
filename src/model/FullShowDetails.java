@@ -6,6 +6,9 @@ import java.time.format.DateTimeFormatter;
  * La classe {@code FullShowDetails} si utilizza per rappresentare
  * tutti i dati di una proiezione all'interno del sistema.
  * </p>
+ * @author Edo Hodzic 761022
+ * @author Piergiorgio Tomaciello 761013
+ * CO
  */
 public class FullShowDetails {
     private static final DateTimeFormatter DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
