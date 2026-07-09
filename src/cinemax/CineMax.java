@@ -22,14 +22,14 @@ import utility.OutputPrinter;
  */
 public class CineMax {
     /** Il margine standard da anteporre alle stringhe stampate. */
-    private static final String MARGIN = "        ";
+    static final String MARGIN = "        ";
     /**
      * Il margine speciale da anteporre alle stringhe in un elenco
      * di opzioni o risultati.
     */
-    private static final String MARKER = "      * ";
+    static final String MARKER = "      * ";
     /** Lunghezza massima di caratteri stampabili per riga (non considera la lunghezza dei margini) */
-    private static final int ROW_LENGTH = 76;
+    static final int ROW_LENGTH = 76;
 
     /**
      * Metodo main che istanzia tutti i componenti necessari, applicando

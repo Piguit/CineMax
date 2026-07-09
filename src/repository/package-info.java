@@ -6,25 +6,21 @@
  * </p>
  * <p>
  * Questo sistema prevede un'interfaccia che definisce il contratto delle classi
- * del repository basati su file in base al tipo di entità e al suo identificativo.
+ * per la persistenza su file in base al tipo di entità gestita e al suo identificativo.
  * </p>
  * <p>
- * Prevede delle operazioni di I/O con le funzioni di inserimento, modifica e cancellazione
- * con la lettura dei file sequenziale.
+ * Prevede delle operazioni di I/O con le funzioni di inserimento, proiezione, modifica e cancellazione
+ * con lettura e scrittura sequenziali dei file.
+ * </p>
+ * <p>
+ * {@link repository.FileException} è un'eccezione unchecked lanciata in caso di errori critici relativi all'I/O su file.
  * </p>
  * @see repository.FileRepository
- * @see repository.FileRepository#insert(java.lang.Object) 
- * @see repository.FileRepository#update(java.lang.Object)
- * @see repository.FileRepository#delete(java.lang.Object) 
  * @see repository.FileException
  * @see repository.GenericRepository
  * @see repository.UserRepository
- * @see repository.UserRepository#FILE_NAME
  * @see repository.MovieRepository
- * @see repository.MovieRepository#FILE_NAME
  * @see repository.ShowRepository
- * @see repository.ShowRepository#FILE_NAME
  * @see repository.ReservationRepository
- * @see repository.ReservationRepository#FILE_NAME
  */
 package repository;

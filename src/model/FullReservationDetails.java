@@ -2,6 +2,7 @@ package model;
 
 import java.time.format.DateTimeFormatter;
 /**
+ * <p>
  * La classe {@code FullReservationDetails} si utilizza per rappresentare
  * tutti i dati di una prenotazione all'interno del sistema.
  * </p>

@@ -1,17 +1,8 @@
-mrinaldi88~Marco~Rinaldi~7zrb1T+iD4QxJBlXzu+8SQ==:KsRds5l5bW1LrlaUmMGAAMuvJWOgIv2QcyerwJKQDoc=~1988-03-14~Torino~ADMIN
-gconti92~Giulia~Conti~82IMN4WLNC8qfFMt+iapFw==:z1ugr79a/4cl60xHxnXSfab3yRyadnnsrEfjYvHP9zY=~1992-07-22~Firenze~PROJECTIONIST
-lferraro85~Luca~Ferraro~i32/vJ8PtOlme0oGY56Qjw==:pdKmbew8oOst3Sj15myYndnqbOZDB6UyRFaSN2i6DSY=~1985-11-05~Napoli~PROJECTIONIST
-smoretti96~Sara~Moretti~ZlCgaO84Y5QKgm0iPnUaxA==:JT0hcPsCkSJQIe9en00RLeQML0nKuaqzENDRMjx/5bo=~1996-01-18~Bologna~BOXOFFICECLERK
-aromano90~Andrea~Romano~N40C7hZTZPkZt32cWm8D4Q==:rEhPzycMrpe38hmV55DIQ8b5o4ig+Hm2Cv369r4oC1s=~1990-09-29~Palermo~BOXOFFICECLERK
-egalli94~Elisa~Galli~Qne3aKXMGKml4OCDJQMISA==:akYklHUUstefiipxiiG78/FhDvVjSRmbRcMM3k/mwTs=~1994-04-11~Verona~BOXOFFICECLERK
-mdesantis87~Matteo~De Santis~MOzaGnk7c9ldWU4WMDkg/Q==:Rhn0hYYpqbqpHC5j8jeayL0s9OCE5qH6i5aKmq3bNQ0=~1987-12-07~Bari~BOXOFFICECLERK
-clombardi93~Chiara~Lombardi~rcjC+EcTPSRxbFwY5yS/sg==:LEM7+tjjwqiMPWH8uNfQsaw1yIpouAD36M+uQRs7Tbc=~1993-06-25~Genova~BOXOFFICECLERK
-dricci89~Davide~Ricci~+DARpg8WQKub+Odn7SYhYA==:KfblGVL+iDkLrV/KQnVfdeRfhv0gH+fkYNozZToSuCE=~1989-08-16~Perugia~CLIENT
-fgreco97~Federica~Greco~iiQcJJryHVyPunxEABff1w==:rOGMNG8Od4+VHNbe8o1cRfNLdfpMfhYVPvuPjIuwcEc=~1997-02-03~Catania~CLIENT
-scaruso91~Simone~Caruso~fL7lsUx3X8tQ9ECtFv0T8g==:gGGXmuFrhUbbqKoBWgoe3DggnC8uxJDr6hTgB6WAmsQ=~1991-10-21~Lecce~CLIENT
-vesposito86~Valentina~Esposito~zYUCx/4DslyTuEruwk1/0A==:B2fAne6k1pCT+No6zgmlTFIJ0J2bTk40Lih8DMR8vVY=~1986-05-09~Salerno~CLIENT
-amarchetti95~Alessandro~Marchetti~q/xL0kbioMK2OxyMwyEvrg==:YGzy0oTTSfCuBzcwHkxyZfi+aV0cmz3HTcVk+r495kY=~1995-01-30~Ancona~CLIENT
-mbellini98~Martina~Bellini~ZDTIhxd2dm8QhxgwRTQAGg==:2co427qvXVQY1VDIE9myRP8EwFFyBVo6mkwl0kYQEjg=~1998-09-12~Padova~CLIENT
-scosta84~Stefano~Costa~s6C3by9AAwWr9Ase6IeG5g==:RVI6ibcxOybUscIVAt96RKrPHA554aGeUjTg53x44x0=~1984-07-27~Trieste~CLIENT
-lfontana93~Laura~Fontana~jzkRYdO427XlGRivPBeMBg==:R4XTSFpz1kkh1TtztmPmJ5y+fJa+pUhHBCIVJjWwSz8=~1993-11-19~Modena~CLIENT
-gparisi88~Giorgio~Parisi~n3CitanxGmrX0uGjO3Tt5Q==:kYUvBVzHOtJ4o26PKK/UuPSbo3WdRDXBg15UWAb3p/4=~1988-03-08~Reggio Calabria~CLIENT
+mrinaldi88~Marco~Rinaldi~8s7JndT3qYTm2THabvr2PA==:/d1ngl6L8d2TbtnQ+Dri6kDzxnhe3qvkvn2XTUpVbhM=~1988-03-14~Torino~ADMIN
+gconti92~Giulia~Conti~N2W5PxvwA+yAZr/0a0M7oA==:bH1JxDNF2fFw43SrUSzFR7OdcxIGGzg5VKZW6LjQkRU=~1992-07-22~Firenze~PROJECTIONIST
+lferraro85~Luca~Ferraro~1LLkw4PM6Tdu+aCCCio17Q==:vIiPntZZWLS5/1scil9+WE/4JDyiF1/qmBHGshGMctU=~1985-11-05~Napoli~PROJECTIONIST
+smoretti96~Sara~Moretti~N55KHN4ShvagU5MnEAzctQ==:MVxVsuGwZvP7J5bUipVmtRG9b8xEko1N9UoPuyD3Jhw=~1996-01-18~Bologna~BOXOFFICECLERK
+aromano90~Andrea~Romano~30RKa9zUmQvyZ+70Ir7aUA==:KrtPrHD2lB342YiLbl/8LbzGx17zyxbtnHbOpH/ENzw=~1990-09-29~Palermo~BOXOFFICECLERK
+egalli94~Elisa~Galli~tmdpPqLhWtaYIlG3GK7MAg==:n8FpMXgYOytqCRi1jP9f2UM95+W/QFC4bafeba7b7Ps=~1994-04-11~Verona~BOXOFFICECLERK
+mdesantis87~Matteo~De Santis~E02OUYq0gu3/v1f1i5TAmw==:by/gd2xsfNi9gG8h6FQTsEQu9RxmA5tueJ7X25apZuQ=~1987-12-07~Bari~BOXOFFICECLERK
+clombardi93~Chiara~Lombardi~/NITKAS3zP299HuGIARxTA==:PQmU/NhTveigOh5n4J77t+pnjtu5TxQ4fHW+p1f5oI0=~1993-06-25~Genova~BOXOFFICECLERK

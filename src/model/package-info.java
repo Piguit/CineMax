@@ -1,19 +1,15 @@
 /**
  * <p>
- * Il seguente package fornisce le classi e le interfacce che compongono
- * il data class per il sistema dell'applicazione.
+ * Il seguente package fornisce le classi e le interfacce che costituiscono
+ * il modello dati per il sistema dell'applicazione.
  * </p>
  * <p>
  * Fornisce le informazioni riguardanti i dati dell'utente, dei film,
- * delle proiezioni e delle prenotazioni, dove ognuna di esse viene rappresentata
- * in modo univoco e con la capacità di visualizzare il riepilogo delle informazioni
- * della classe specificata.
+ * delle proiezioni e delle prenotazioni, dove ogni elemento viene rappresentato
+ * in modo univoco e con la capacità di visualizzarne il riepilogo delle informazioni.
  * </p>
  * @see model.Identifiable
- * @see model.Identifiable#getId()
- * @see model.Identifiable#getFields() 
  * @see model.ItemInitializer
- * @see model.ItemInitializer#getNewItem(String[])
  * @see model.Movie
  * @see model.User
  * @see model.Role
